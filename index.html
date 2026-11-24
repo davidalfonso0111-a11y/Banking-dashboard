@@ -26,24 +26,102 @@
   .row-actions button { padding: 4px 8px; font-size: 12px; }
   .note { font-size: 12px; color: #64748b; }
   #status { font-size: 12px; color: #334155; margin: 0 0 8px; }
+  header { display:flex; align-items:center; justify-content:space-between; gap:16px; position:relative; }
+  .navigation { position:relative; }
+  .menu-toggle { background:transparent; border:1px solid #64748b; width:44px; height:44px; display:flex; flex-direction:column; justify-content:center; align-items:center; gap:5px; }
+  .menu-toggle span { display:block; width:22px; height:2px; background:#fff; border-radius:2px; }
+  .menu-dropdown { position:absolute; right:0; top:52px; width:260px; padding:8px; background:#fff; color:#1d2433; border:1px solid #e5e9f2; border-radius:12px; box-shadow:0 12px 36px #0003; z-index:20; }
+  .menu-dropdown button { display:block; width:100%; text-align:left; background:transparent; color:#1d2433; padding:12px; margin:2px 0; }
+  .menu-dropdown button:hover, .menu-dropdown button:focus-visible { background:#f1f5f9; }
+  .menu-dropdown button[aria-current="page"] { background:#e0e7ff; color:#3730a3; font-weight:700; }
+  [hidden] { display:none !important; }
+  .page-heading { margin:0 0 16px; font-size:22px; }
+  .table-scroll { overflow-x:auto; }
+  .account-group-heading { font-size:14px; color:#475569; margin:20px 0 10px; }
+  .account-stack { display:flex; flex-direction:column; gap:10px; margin-bottom:16px; }
+  .overview-account { display:flex; align-items:center; justify-content:space-between; gap:16px; padding:16px; background:#f8fafc; border:1px solid #e5e9f2; border-radius:10px; }
+  .overview-account-info { min-width:0; overflow-wrap:anywhere; }
+  .overview-account-name { display:block; margin-bottom:4px; }
+  .overview-account-value { font-weight:700; font-size:20px; white-space:nowrap; }
+  .wallet-visibility { display:flex; align-items:center; gap:10px; font-weight:600; cursor:pointer; }
+  .wallet-visibility input { width:18px; height:18px; accent-color:#2563eb; }
+  :root { color-scheme:light; background:#f4f6fa; }
+  html[data-theme="dark"] { color-scheme:dark; background:#101722; }
+  html[data-theme="light"] { color-scheme:light; background:#f4f6fa; }
+  body { min-height:100vh; transition:background-color .2s, color .2s; }
+  body[data-theme="dark"] { color-scheme:dark; background:#101722; color:#e5edf7; }
+  body[data-theme="dark"] main { background:#101722; }
+  body[data-theme="dark"] .card { box-shadow:0 2px 12px rgba(0,0,0,.3); }
+  body[data-theme="dark"] input::placeholder { color:#94a3b8; }
+  body[data-theme="dark"] button.secondary { background:#3b4b63; color:#f1f5f9; }
+  body[data-theme="dark"] button.danger { background:#991b1b; color:#fff; }
+  body[data-theme="dark"] .menu-toggle { background:transparent; border-color:#64748b; }
+  body[data-theme="dark"] input[type="checkbox"] { accent-color:#60a5fa; }
+  body[data-theme="dark"] header { background:#111827; }
+  body[data-theme="dark"] .card, body[data-theme="dark"] .menu-dropdown { background:#1b2636; color:#e5edf7; }
+  body[data-theme="dark"] input, body[data-theme="dark"] select { background:#101722; color:#e5edf7; border-color:#475569; }
+  body[data-theme="dark"] th, body[data-theme="dark"] td { border-color:#344256; }
+  body[data-theme="dark"] .overview-account { background:#142031; border-color:#344256; }
+  body[data-theme="dark"] .note, body[data-theme="dark"] .account-group-heading, body[data-theme="dark"] #status { color:#b6c5d9; }
+  body[data-theme="dark"] .menu-dropdown { border-color:#344256; }
+  body[data-theme="dark"] .menu-dropdown button { color:#e5edf7; }
+  body[data-theme="dark"] .menu-dropdown button:hover, body[data-theme="dark"] .menu-dropdown button:focus-visible { background:#344256; }
+  body[data-theme="dark"] .menu-dropdown button[aria-current="page"], body[data-theme="dark"] .tag { background:#303f70; color:#dce5ff; }
+  body[data-theme="dark"] .pos { color:#6ee7a0; }
+  body[data-theme="dark"] .neg { color:#fca5a5; }
+  @media(max-width:420px) { .overview-account { flex-direction:column; align-items:flex-start; gap:8px; } }
+  @media(max-width:600px) { header { padding:12px 16px; } header h1 { font-size:16px; } main { padding:16px; } form input, form select { max-width:100%; } .card { overflow-x:auto; } }
 </style>
 </head>
 <body>
-<header><h1>💼 Mijn Financieel Dashboard</h1></header>
+<header>
+  <h1>💼 Mijn Financieel Dashboard</h1>
+  <div class="navigation">
+    <button type="button" id="menuToggle" class="menu-toggle" aria-label="Navigatie openen" aria-expanded="false" aria-controls="dashboardMenu"><span></span><span></span><span></span></button>
+    <nav id="dashboardMenu" class="menu-dropdown" aria-label="Dashboard navigatie" hidden>
+      <button type="button" data-nav="overzicht" aria-current="page">📊 Overzicht</button>
+      <button type="button" data-nav="rekeningen">🏦 Rekeningen</button>
+      <button type="button" data-nav="wallets">👛 Wallets & crypto</button>
+      <button type="button" data-nav="transacties">↔ Uitgaven & inkomsten</button>
+      <button type="button" data-nav="instellingen">⚙ Instellingen & back-up</button>
+      <button type="button" data-nav="documentatie">📖 Documentatie</button>
+    </nav>
+  </div>
+</header>
 <main>
+<h2 id="pageHeading" class="page-heading" tabindex="-1">Overzicht</h2>
 
-<div class="grid">
+<section class="card" data-page="overzicht" style="border-top:4px solid #ff6200">
+  <h2>🏦 Mijn rekeningen</h2>
+  <h3 class="account-group-heading">Zicht- & betaalrekeningen</h3>
+  <div id="overviewBankAccounts" class="account-stack"></div>
+  <h3 class="account-group-heading">Spaarrekeningen</h3>
+  <div id="overviewSavingsAccounts" class="account-stack"></div>
+  <p class="note">Handmatig bijgehouden saldi; nog geen live bankkoppeling.</p>
+  <button type="button" class="secondary" onclick="showPage('rekeningen')">Rekeningen beheren</button>
+</section>
+<section class="card" data-page="overzicht">
+  <label class="wallet-visibility" for="showWalletsOnOverview"><input type="checkbox" id="showWalletsOnOverview"> Wallets & crypto op de voorpagina tonen</label>
+  <p class="note">Deze keuze wordt bewaard. Verborgen wallets blijven meetellen in je totale vermogen.</p>
+  <div id="overviewWalletSection" hidden>
+    <h2>👛 Mijn wallets & crypto</h2>
+    <div id="overviewWalletAccounts" class="account-stack"></div>
+    <button type="button" class="secondary" onclick="showPage('wallets')">Wallets beheren</button>
+  </div>
+</section>
+
+<div class="grid" data-page="overzicht">
   <div class="card"><h2>Totaal vermogen</h2><div class="big" id="totaal">€0,00</div><div class="note">Rekeningen + crypto</div></div>
   <div class="card"><h2>Deze maand: inkomsten</h2><div class="big pos" id="inkMaand">€0,00</div></div>
   <div class="card"><h2>Deze maand: uitgaven</h2><div class="big neg" id="uitMaand">€0,00</div></div>
   <div class="card"><h2>Deze maand: saldo</h2><div class="big" id="saldoMaand">€0,00</div></div>
 </div>
 
-<div class="card">
-  <h2>Rekeningen & wallets</h2>
+<div class="card" data-page="rekeningen wallets" hidden>
+  <h2 id="accountsHeading">Rekeningen</h2>
   <p id="status">Nog niet gesynchroniseerd.</p>
   <form id="accForm">
-    <input name="naam" placeholder="Naam (bijv. ING, Trust Wallet)" required>
+    <input name="naam" placeholder="Naam (bijv. ING betaalrekening, Trust Wallet)" required>
     <select name="type">
       <option value="bank">Bankrekening</option>
       <option value="crypto">Crypto (handmatig)</option>
@@ -60,27 +138,30 @@
     <thead><tr><th>Naam</th><th>Type</th><th>Waarde</th><th></th></tr></thead>
     <tbody id="accList"></tbody>
   </table>
-  <p class="note">Wallets: alleen je publieke adres, nooit een seed phrase of private key. Koersen (CoinGecko) en ETH-saldo worden elke 5 minuten automatisch bijgewerkt terwijl deze pagina open staat. Tokens worden nog niet meegeteld.</p>
-  <form><button type="button" class="secondary" onclick="syncAll(true)">Nu synchroniseren</button></form>
+  <p class="note" data-wallet-only hidden>Wallets: alleen je publieke adres, nooit een seed phrase of private key. Koersen (CoinGecko) en ETH-saldo worden elke 5 minuten automatisch bijgewerkt terwijl deze pagina open staat. Tokens worden nog niet meegeteld.</p>
+  <form data-wallet-only hidden><button type="button" class="secondary" onclick="syncAll(true)">Nu synchroniseren</button></form>
 </div>
 
-<div class="card">
+<div class="card" data-page="transacties" hidden>
   <h2>Transactie toevoegen</h2>
   <form id="txForm">
-    <select name="soort">
+    <select name="soort" id="txSoort">
       <option value="uit">Uitgave</option>
       <option value="in">Inkomst</option>
+      <option value="transfer">Overboeking eigen rekeningen</option>
     </select>
-    <input name="bedrag" type="number" step="0.01" min="0" placeholder="Bedrag €" required>
+    <select name="accountId" id="txAccount" required aria-label="Rekening"></select>
+    <select name="toAccountId" id="txToAccount" aria-label="Ontvangende rekening" style="display:none"></select>
+    <input name="bedrag" type="number" step="0.01" min="0.01" placeholder="Bedrag €" required>
     <input name="omschrijving" placeholder="Omschrijving (bijv. Albert Heijn)" required id="omschr">
     <input name="datum" type="date" required id="datum">
     <select name="categorie" id="cat"></select>
     <button>Opslaan</button>
   </form>
-  <p class="note">Categorie wordt automatisch voorgesteld op basis van de omschrijving. Je kunt dit altijd aanpassen.</p>
+  <p class="note">Nieuwe inkomsten en uitgaven wijzigen het saldo van de gekozen rekening. Overboekingen wijzigen beide saldi, maar tellen niet als inkomsten of uitgaven. Bestaande transacties blijven ongekoppeld, zodat oude bedragen niet dubbel worden verwerkt.</p>
 </div>
 
-<div class="card">
+<div class="card" data-page="transacties" hidden>
   <h2>Transacties</h2>
   <form id="filterForm">
     <input type="month" id="maandFilter">
@@ -92,11 +173,48 @@
   </table>
 </div>
 
-<div class="card">
-  <h2>Uitgaven per categorie (deze maand)</h2>
+<div class="card" data-page="instellingen" hidden>
+  <h2>Weergave</h2>
+  <label for="themePreference">Licht of donker</label>
+  <select id="themePreference">
+    <option value="light">Lichte modus</option>
+    <option value="dark">Donkere modus</option>
+    <option value="system">Systeeminstelling volgen</option>
+  </select>
+  <p class="note">Je keuze wordt in deze browser en in je back-up bewaard. Systeeminstelling volgt automatisch de weergave van je apparaat.</p>
+</div>
+<div class="card" data-page="instellingen" hidden>
+  <h2>Back-up en herstel</h2>
+  <button type="button" onclick="exportBackup()">Volledige back-up downloaden</button>
+  <button type="button" class="secondary" onclick="document.getElementById('backupFile').click()">Back-up herstellen</button>
+  <input type="file" id="backupFile" accept=".json,application/json" hidden>
+  <p class="note">Een back-up bevat je rekeningen, publieke wallet-adressen en transacties. Bewaar dit financiële bestand veilig. Herstellen vervangt alle huidige gegevens na bevestiging. Geen automatische cloudopslag.</p>
+</div>
+
+<div class="card" data-page="overzicht">
+  <h2>Uitgaven per categorie (geselecteerde maand)</h2>
+  <p class="note">Kies een maand bij Uitgaven & inkomsten om een andere periode te bekijken.</p>
   <table><tbody id="catSum"></tbody></table>
 </div>
 
+<div class="card" data-page="instellingen" hidden>
+  <h2>Opslag & synchronisatie</h2>
+  <p>Je gegevens worden lokaal in deze browser bewaard. Ze worden niet automatisch met andere apparaten gedeeld. Download regelmatig een back-up.</p>
+  <p>Crypto-synchronisatie wordt iedere 5 minuten geprobeerd terwijl deze pagina openstaat. Er is nog geen achtergrondserver of automatische bankimport.</p>
+</div>
+<div class="card" data-page="documentatie" hidden>
+  <h2>Zo gebruik je het dashboard</h2>
+  <ul>
+    <li><strong>Overzicht:</strong> alle zicht- en betaalrekeningen en spaarrekeningen staan geordend onder elkaar op de voorpagina, zonder keuzemenu. Met de optie ‘Wallets & crypto op de voorpagina tonen’ bepaal je of je wallets daar ook zichtbaar zijn. Deze voorkeur wordt in deze browser en in je back-up bewaard. Verborgen wallets blijven meetellen in je totale vermogen. Bekijk daaronder de inkomsten en uitgaven van de geselecteerde maand.</li>
+    <li><strong>Rekeningen:</strong> voeg bank- en spaarrekeningen toe met hun huidige saldo. Dit zijn handmatig bijgehouden rekeningen, geen bankkoppelingen.</li>
+    <li><strong>Wallets & crypto:</strong> voeg een publieke Ethereum-wallet of een handmatige crypto-positie toe. Andere netwerken en tokens worden nog niet automatisch uitgelezen.</li>
+    <li><strong>Uitgaven & inkomsten:</strong> registreer transacties op een rekening. Overboekingen verplaatsen geld tussen eigen rekeningen en tellen niet als inkomsten of uitgaven.</li>
+    <li><strong>Instellingen & back-up:</strong> download of herstel je volledige gegevensbestand. Herstellen vervangt de huidige gegevens na bevestiging.</li>
+  </ul>
+  <h2>Veiligheid & beperkingen</h2>
+  <p>Voer nooit seed phrases, private keys of geheime API-sleutels in. Een publieke website is geen beveiligde financiële backend. Back-upbestanden bevatten persoonlijke financiële gegevens: bewaar ze veilig.</p>
+  <p>Het dashboard kan geen betalingen uitvoeren. Crypto-waarden zijn indicatief en afhankelijk van de beschikbare koersen. Bestaande ongekoppelde transacties veranderen geen rekeningsaldo.</p>
+</div>
 </main>
 <script>
 const CATEGORIEEN = {
@@ -115,10 +233,84 @@ const COINGECKO_IDS = { BTC: "bitcoin", ETH: "ethereum", SOL: "solana", BNB: "bi
 const ETH_RPC = "https://ethereum-rpc.publicnode.com";
 const SYNC_MS = 5 * 60 * 1000;
 
+let currentPage = 'overzicht';
+const pageTitles = {overzicht:'Overzicht', rekeningen:'Rekeningen', wallets:'Wallets & crypto', transacties:'Uitgaven & inkomsten', instellingen:'Instellingen & back-up', documentatie:'Documentatie'};
+const menuToggle = document.getElementById('menuToggle');
+const dashboardMenu = document.getElementById('dashboardMenu');
+function closeMenu(returnFocus = false) {
+  dashboardMenu.hidden = true;
+  menuToggle.setAttribute('aria-expanded', 'false');
+  menuToggle.setAttribute('aria-label', 'Navigatie openen');
+  if (returnFocus) menuToggle.focus();
+}
+menuToggle.addEventListener('click', () => {
+  const open = dashboardMenu.hidden;
+  dashboardMenu.hidden = !open;
+  menuToggle.setAttribute('aria-expanded', String(open));
+  menuToggle.setAttribute('aria-label', open ? 'Navigatie sluiten' : 'Navigatie openen');
+});
+document.addEventListener('click', e => { if (!e.target.closest('.navigation')) closeMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && !dashboardMenu.hidden) closeMenu(true); });
+function showPage(page) {
+  if (!pageTitles[page]) return;
+  currentPage = page;
+  document.querySelectorAll('[data-page]').forEach(el => { el.hidden = !el.dataset.page.split(' ').includes(page); });
+  const heading = document.getElementById('pageHeading');
+  heading.textContent = pageTitles[page];
+  document.querySelectorAll('[data-nav]').forEach(button => {
+    if (button.dataset.nav === page) button.setAttribute('aria-current', 'page');
+    else button.removeAttribute('aria-current');
+  });
+  if (page === 'rekeningen' || page === 'wallets') {
+    const wallet = page === 'wallets';
+    document.getElementById('accountsHeading').textContent = pageTitles[page];
+    [...accType.options].forEach(option => { const cryptoType = ['crypto','wallet'].includes(option.value); option.disabled = cryptoType !== wallet; option.hidden = option.disabled; });
+    if (accType.selectedOptions[0].disabled) accType.value = wallet ? 'wallet' : 'bank';
+    accType.dispatchEvent(new Event('change'));
+    document.querySelectorAll('[data-wallet-only]').forEach(el => { el.hidden = !wallet; });
+    document.getElementById('status').hidden = !wallet;
+    renderAccounts();
+  }
+  closeMenu(); heading.focus();
+}
+dashboardMenu.addEventListener('click', e => { const button = e.target.closest('[data-nav]'); if (button) showPage(button.dataset.nav); });
+
 let data = JSON.parse(localStorage.getItem("dashboardData") || '{"accounts":[],"tx":[]}');
 const save = () => localStorage.setItem("dashboardData", JSON.stringify(data));
+const systemTheme = window.matchMedia('(prefers-color-scheme: dark)');
+function applyTheme() {
+  const preference = ['light','dark','system'].includes(data.preferences?.theme) ? data.preferences.theme : 'light';
+  const theme = preference === 'system' ? (systemTheme.matches ? 'dark' : 'light') : preference;
+  document.documentElement.dataset.theme = theme;
+  document.body.dataset.theme = theme;
+  document.getElementById('themePreference').value = preference;
+}
+document.getElementById('themePreference').addEventListener('change', e => {
+  data.preferences = {...data.preferences, theme:e.target.value};
+  save(); applyTheme();
+});
+systemTheme.addEventListener('change', applyTheme);
+applyTheme();
 const eur = n => new Intl.NumberFormat("nl-NL",{style:"currency",currency:"EUR"}).format(n);
 const isCrypto = a => a.type === "crypto" || a.type === "wallet";
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const money = n => Math.round((n + Number.EPSILON) * 100) / 100;
+const newId = () => Math.max(Date.now(), ...data.accounts.map(a=>a.id+1), ...data.tx.map(t=>t.id+1));
+function refreshAccountOptions() {
+  const accounts = data.accounts.filter(a => !isCrypto(a));
+  for (const id of ['txAccount','txToAccount']) {
+    const el = document.getElementById(id), previous = el.value;
+    el.replaceChildren(new Option(accounts.length ? 'Kies een rekening' : 'Voeg eerst een bank- of spaarrekening toe', ''));
+    accounts.forEach(a => el.add(new Option(a.naam, String(a.id))));
+    if (accounts.some(a => String(a.id) === previous)) el.value = previous;
+  }
+}
+document.getElementById('txSoort').addEventListener('change', () => {
+  const transfer = document.getElementById('txSoort').value === 'transfer';
+  const target = document.getElementById('txToAccount');
+  target.style.display = transfer ? '' : 'none'; target.required = transfer;
+  catSelect.style.display = transfer ? 'none' : '';
+});
 
 // Vul categorie-select
 const catSelect = document.getElementById("cat");
@@ -126,7 +318,7 @@ Object.keys(CATEGORIEEN).forEach(c => catSelect.add(new Option(c, c)));
 
 // Automatische categorisering
 function autoCat(omschr, soort) {
-  if (soort === "in") return "Salaris";
+  if (soort === "transfer") return "Overig";
   const t = omschr.toLowerCase();
   for (const [cat, woorden] of Object.entries(CATEGORIEEN)) {
     if (woorden.some(w => t.includes(w))) return cat;
@@ -178,11 +370,13 @@ document.getElementById("accForm").addEventListener("submit", e => {
 function accWaarde(a) { return isCrypto(a) ? a.qty * a.prijs : a.saldo; }
 
 function renderAccounts() {
+  refreshAccountOptions();
   const tb = document.getElementById("accList");
-  tb.innerHTML = data.accounts.map(a => `
+  const visibleAccounts = data.accounts.filter(a => currentPage === 'wallets' ? isCrypto(a) : currentPage === 'rekeningen' ? !isCrypto(a) : true);
+  tb.innerHTML = visibleAccounts.map(a => `
     <tr>
-      <td>${a.naam}</td>
-      <td><span class="tag">${a.type}${a.coin ? " · "+a.coin : ""}${a.type==="wallet" ? " · "+a.adres.slice(0,6)+"…"+a.adres.slice(-4) : ""}</span></td>
+      <td>${esc(a.naam)}</td>
+      <td><span class="tag">${esc(a.type)}${a.coin ? " · "+esc(a.coin) : ""}${a.type==="wallet" ? " · "+a.adres.slice(0,6)+"…"+a.adres.slice(-4) : ""}</span></td>
       <td>${eur(accWaarde(a))}${isCrypto(a) ? `<div class="note">${a.qty} × ${eur(a.prijs)}${COINGECKO_IDS[a.coin] ? " (auto)" : ""}</div>` : ""}</td>
       <td class="row-actions">
         ${a.type==="wallet" ? "" : `<button class="secondary" onclick="updateAcc(${a.id})">Bijwerken</button>`}
@@ -207,6 +401,9 @@ function updateAcc(id) {
   save(); render();
 }
 function delAcc(id) {
+  if (data.tx.some(t => t.accountId === id || t.toAccountId === id)) {
+    alert('Deze rekening heeft gekoppelde transacties. Verwijder die eerst (dat draait hun saldo-effect terug), of bewaar de rekening voor je historie.'); return;
+  }
   if (confirm("Rekening verwijderen?")) { data.accounts = data.accounts.filter(a => a.id !== id); save(); render(); }
 }
 
@@ -246,18 +443,32 @@ async function syncAll(manual) {
 // Transacties
 document.getElementById("txForm").addEventListener("submit", e => {
   e.preventDefault();
-  const f = new FormData(e.target);
+  const f = new FormData(e.target), amount = money(Number(f.get('bedrag')));
+  const account = data.accounts.find(a => a.id === Number(f.get('accountId')) && !isCrypto(a));
+  const transfer = f.get('soort') === 'transfer';
+  const target = transfer ? data.accounts.find(a => a.id === Number(f.get('toAccountId')) && !isCrypto(a)) : null;
+  if (!account || !Number.isFinite(amount) || amount <= 0) { alert('Kies een rekening en een geldig positief bedrag.'); return; }
+  if (transfer && (!target || target.id === account.id)) { alert('Kies twee verschillende rekeningen.'); return; }
+  account.saldo = money(account.saldo + (f.get('soort') === 'in' ? amount : -amount));
+  if (target) target.saldo = money(target.saldo + amount);
   data.tx.push({
-    id: Date.now(),
-    soort: f.get("soort"),
-    bedrag: parseFloat(f.get("bedrag")),
-    omschrijving: f.get("omschrijving"),
-    datum: f.get("datum"),
-    categorie: f.get("categorie")
+    id: newId(), soort: f.get('soort'), bedrag: amount,
+    omschrijving: f.get('omschrijving'), datum: f.get('datum'),
+    categorie: transfer ? 'Overboeking' : f.get('categorie'),
+    accountId: account.id, ...(target ? {toAccountId: target.id} : {})
   });
-  save(); e.target.reset(); document.getElementById("datum").valueAsDate = new Date(); render();
+  save(); e.target.reset(); document.getElementById('txSoort').dispatchEvent(new Event('change'));
+  document.getElementById('datum').valueAsDate = new Date(); render();
 });
-function delTx(id) { data.tx = data.tx.filter(t => t.id !== id); save(); render(); }
+function delTx(id) {
+  const t = data.tx.find(t=>t.id === id);
+  if (!t || !confirm('Transactie verwijderen? Het saldo-effect van een gekoppelde transactie wordt teruggedraaid.')) return;
+  const account = data.accounts.find(a=>a.id === t.accountId);
+  const target = data.accounts.find(a=>a.id === t.toAccountId);
+  if (account) account.saldo = money(account.saldo + (t.soort === 'in' ? -t.bedrag : t.bedrag));
+  if (target && t.soort === 'transfer') target.saldo = money(target.saldo - t.bedrag);
+  data.tx = data.tx.filter(t=>t.id !== id); save(); render();
+}
 document.getElementById("maandFilter").addEventListener("change", render);
 
 function renderTx() {
@@ -266,13 +477,52 @@ function renderTx() {
   document.getElementById("txList").innerHTML = lijst.map(t => `
     <tr>
       <td>${t.datum}</td>
-      <td>${t.omschrijving}</td>
-      <td><span class="tag">${t.categorie}</span></td>
-      <td class="${t.soort==="in"?"pos":"neg"}">${t.soort==="in"?"+":"−"}${eur(t.bedrag)}</td>
+      <td>${esc(t.omschrijving)}<div class="note">${esc(data.accounts.find(a=>a.id===t.accountId)?.naam || 'Niet gekoppeld (bestaande transactie)')}${t.soort==='transfer' ? ' → '+esc(data.accounts.find(a=>a.id===t.toAccountId)?.naam || 'Onbekend') : ''}</div></td>
+      <td><span class="tag">${esc(t.categorie)}</span></td>
+      <td class="${t.soort==='transfer'?'':t.soort==='in'?'pos':'neg'}">${t.soort==='transfer'?'↔ ':t.soort==='in'?'+':'−'}${eur(t.bedrag)}</td>
       <td class="row-actions"><button class="danger" onclick="delTx(${t.id})">×</button></td>
     </tr>`).join("") || `<tr><td colspan="5" class="note">Geen transacties in deze periode.</td></tr>`;
   return lijst;
 }
+
+function renderMainAccounts() {
+  const groups = [
+    {id:'overviewBankAccounts', accounts:data.accounts.filter(a => a.type === 'bank'), empty:'Nog geen zicht- of betaalrekeningen. Voeg bijvoorbeeld je ING-rekening toe via Rekeningen beheren.'},
+    {id:'overviewSavingsAccounts', accounts:data.accounts.filter(a => a.type === 'spaar'), empty:'Nog geen spaarrekeningen toegevoegd.'},
+    {id:'overviewWalletAccounts', accounts:data.accounts.filter(isCrypto), empty:'Nog geen wallets of crypto-posities toegevoegd.'}
+  ];
+  for (const group of groups) {
+    const container = document.getElementById(group.id);
+    container.replaceChildren();
+    const accounts = [...group.accounts].sort((a,b) => a.naam.localeCompare(b.naam, 'nl', {sensitivity:'base', numeric:true}));
+    if (!accounts.length) {
+      const empty = document.createElement('p'); empty.className = 'note'; empty.textContent = group.empty;
+      container.append(empty);
+    }
+    for (const account of accounts) {
+      const row = document.createElement('div'); row.className = 'overview-account';
+      const info = document.createElement('div'); info.className = 'overview-account-info';
+      const name = document.createElement('strong'); name.className = 'overview-account-name'; name.textContent = account.naam;
+      const note = document.createElement('div'); note.className = 'note';
+      if (!isCrypto(account)) note.textContent = account.type === 'spaar' ? 'Spaarrekening' : 'Zicht- / betaalrekening';
+      else {
+        note.textContent = `${account.qty} ${account.coin} · indicatieve waarde`;
+        if (account.type === 'wallet') note.textContent += ` · Ethereum: ${account.adres.slice(0,6)}…${account.adres.slice(-4)} · alleen ETH, geen tokens`;
+        if (!account.prijs) note.textContent += ' · nog geen koers beschikbaar';
+      }
+      const value = document.createElement('div'); value.className = 'overview-account-value';
+      value.textContent = isCrypto(account) && !account.prijs ? 'Koers ontbreekt' : eur(accWaarde(account));
+      info.append(name, note); row.append(info, value); container.append(row);
+    }
+  }
+  const showWallets = data.preferences?.showWalletsOnOverview !== false;
+  document.getElementById('showWalletsOnOverview').checked = showWallets;
+  document.getElementById('overviewWalletSection').hidden = !showWallets;
+}
+document.getElementById('showWalletsOnOverview').addEventListener('change', e => {
+  data.preferences = {...data.preferences, showWalletsOnOverview:e.target.checked};
+  save(); renderMainAccounts();
+});
 
 function renderTotals() {
   const m = document.getElementById("maandFilter").value;
@@ -291,7 +541,7 @@ function renderTotals() {
   const perCat = {};
   maand.filter(t=>t.soort==="uit").forEach(t => perCat[t.categorie]=(perCat[t.categorie]||0)+t.bedrag);
   document.getElementById("catSum").innerHTML = Object.entries(perCat).sort((a,b)=>b[1]-a[1])
-    .map(([c,v]) => `<tr><td>${c}</td><td style="text-align:right">${eur(v)}</td></tr>`).join("")
+    .map(([c,v]) => `<tr><td>${esc(c)}</td><td style="text-align:right">${eur(v)}</td></tr>`).join("")
     || `<tr><td class="note">Geen uitgaven deze maand.</td></tr>`;
 }
 
@@ -304,7 +554,58 @@ function exportCSV() {
   a.click();
 }
 
-function render() { renderAccounts(); renderTx(); renderTotals(); }
+function downloadJSON(object, name) {
+  const url = URL.createObjectURL(new Blob([JSON.stringify(object,null,2)], {type:'application/json'}));
+  const link = Object.assign(document.createElement('a'), {href:url, download:name});
+  link.click(); setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+function exportBackup() {
+  downloadJSON({version:3, exportedAt:new Date().toISOString(), data}, 'dashboard-backup-'+new Date().toISOString().slice(0,10)+'.json');
+}
+function validBackup(d) {
+  if (!d || !Array.isArray(d.accounts) || !Array.isArray(d.tx)) return false;
+  const ids = new Set();
+  for (const a of d.accounts) {
+    if (!a || !Number.isSafeInteger(a.id) || a.id<0 || ids.has(a.id) || typeof a.naam!=='string' || !['bank','spaar','crypto','wallet'].includes(a.type)) return false;
+    ids.add(a.id);
+    if (isCrypto(a)) {
+      if (typeof a.coin!=='string' || !Number.isFinite(a.qty) || a.qty<0 || !Number.isFinite(a.prijs) || a.prijs<0) return false;
+      if (a.type==='wallet' && !/^0x[a-fA-F0-9]{40}$/.test(a.adres)) return false;
+    } else if (!Number.isFinite(a.saldo)) return false;
+  }
+  const txIds = new Set();
+  for (const t of d.tx) {
+    if (!t || !Number.isSafeInteger(t.id) || t.id<0 || txIds.has(t.id) || !['in','uit','transfer'].includes(t.soort) || !Number.isFinite(t.bedrag) || t.bedrag<=0 || typeof t.omschrijving!=='string' || typeof t.categorie!=='string' || typeof t.datum!=='string' || !/^\d{4}-\d{2}-\d{2}$/.test(t.datum) || !Number.isFinite(Date.parse(t.datum))) return false;
+    txIds.add(t.id);
+    const linked = d.accounts.find(a=>a.id===t.accountId && !isCrypto(a));
+    if (t.accountId!==undefined && !linked) return false;
+    if (t.soort==='transfer' && (!linked || t.toAccountId===t.accountId || !d.accounts.some(a=>a.id===t.toAccountId && !isCrypto(a)))) return false;
+    if (t.soort!=='transfer' && t.toAccountId!==undefined) return false;
+  }
+  return true;
+}
+document.getElementById('backupFile').addEventListener('change', async e => {
+  const file = e.target.files[0]; if (!file) return;
+  try {
+    if (file.size>10*1024*1024) throw new Error('Bestand is groter dan 10 MB.');
+    const parsed = JSON.parse(await file.text());
+    const restored = parsed.data || parsed;
+    if (!validBackup(restored)) throw new Error('Dit is geen geldige dashboard-back-up.');
+    if (!confirm('Alle huidige gegevens vervangen? Download eerst een back-up als je die wilt bewaren.')) return;
+    localStorage.setItem('dashboardData', JSON.stringify(restored));
+    data = restored; render(); setStatus('Back-up hersteld. Saldi zijn overgenomen, niet opnieuw berekend.');
+  } catch(err) { alert('Herstellen mislukt: '+err.message); }
+  finally { e.target.value=''; }
+});
+function render() {
+  applyTheme();
+  if (currentPage === 'rekeningen' || currentPage === 'wallets') {
+    const allowed = currentPage === 'wallets' ? ['wallet','crypto'] : ['bank','spaar'];
+    if (!allowed.includes(accType.value)) accType.value = allowed[0];
+    accType.dispatchEvent(new Event('change'));
+  }
+  renderAccounts(); renderTx(); renderTotals(); renderMainAccounts();
+}
 render();
 
 // Start automatische sync: direct bij openen en daarna elke 5 minuten
