@@ -1,72 +1,95 @@
 #!/usr/bin/env python3
-"""Split a complete exported dashboard without truncating its source.
-Usage: python tools/split_dashboard.py /path/to/export.html
-Output: split-dashboard/ (does not overwrite the live index.html).
+"""Split a complete single-file dashboard without changing the source.
+Usage: python tools/split_dashboard.py dashboard-complete.html --output dist
+The output must be inspected and tested before publishing.
 """
-from pathlib import Path
 import argparse
-import re
 import hashlib
 import json
+from pathlib import Path
+import re
+import tempfile
+import shutil
 
-parser = argparse.ArgumentParser(description=__doc__)
-parser.add_argument('source', type=Path)
-parser.add_argument('--output', type=Path, default=Path('split-dashboard'))
-args = parser.parse_args()
-source = args.source.read_text(encoding='utf-8-sig')
-if not re.search(r'<!doctype\s+html', source, re.I) or not re.search(r'</html>\s*$', source, re.I):
-    raise SystemExit('STOP: source must be the complete HTML export, including </html>.')
-if not re.search(r'</body>', source, re.I):
-    raise SystemExit('STOP: source is missing </body>.')
-output = args.output
-if output.exists():
-    raise SystemExit('STOP: output directory already exists; choose another --output path.')
-files = {}
-counts = {'css': 0, 'js': 0}
-pattern = re.compile(r'<style\b([^>]*)>(.*?)</style\s*>|<script\b([^>]*)>(.*?)</script\s*>', re.I | re.S)
 
-def extract(match):
-    if match.group(1) is not None:
-        attrs, body = match.group(1), match.group(2)
-        # Preserve unusual style attributes by leaving the block inline.
-        if attrs.strip():
-            return match.group(0)
-        counts['css'] += 1
-        path = f'assets/css/styles-{counts["css"]:02d}.css'
-        files[path] = body
-        return f'<link rel="stylesheet" href="./{path}">'
-    attrs, body = match.group(3), match.group(4)
-    # Existing external scripts and non-JavaScript data blocks stay unchanged.
-    if re.search(r'\bsrc\s*=', attrs, re.I):
-        return match.group(0)
-    type_match = re.search(r'\btype\s*=\s*[\"\']([^\"\']+)[\"\']', attrs, re.I)
-    if type_match and type_match.group(1).lower() not in ('text/javascript', 'application/javascript', 'module'):
-        return match.group(0)
-    counts['js'] += 1
-    path = f'assets/js/script-{counts["js"]:02d}.js'
-    files[path] = body
-    # No defer/async added: preserve the original execution order and timing.
-    return f'<script{attrs} src="./{path}"></script>'
+def split(source, output):
+    source = source.resolve()
+    output = output.resolve()
+    if not source.is_file():
+        raise ValueError('Bronbestand ontbreekt.')
+    if output.exists():
+        raise ValueError('Uitvoermap bestaat al. Kies een nieuwe map; niets wordt overschreven.')
+    if source == output or output in source.parents:
+        raise ValueError('Uitvoermap mag het bronbestand niet bevatten.')
+    text = source.read_text(encoding='utf-8-sig')
+    if not re.search(r'</body>\s*</html>\s*$', text, re.I):
+        raise ValueError('Onvolledig HTML-bestand: afsluitende body/html ontbreken.')
+    if not re.search(r'<html\b', text, re.I):
+        raise ValueError('Geen volledig HTML-document.')
+    files = {}
+    def style(match):
+        number = sum(name.endswith('.css') for name in files) + 1
+        name = f'assets/css/styles-{number}.css'
+        files[name] = match.group(1).strip() + '\n'
+        return f'<link rel="stylesheet" href="./{name}">'
+    html = re.sub(r'<style\s*>(.*?)</style\s*>', style, text, flags=re.I | re.S)
+    def script(match):
+        code = match.group(1)
+        number = sum(name.endswith('.js') for name in files) + 1
+        marker = '// Supabase Auth via HTTPS REST; geen externe SDK nodig.'
+        if marker in code:
+            before, after = code.split(marker, 1)
+            dashboard = 'assets/js/dashboard.js'
+            auth = 'assets/js/auth.js'
+            if dashboard in files or auth in files:
+                raise ValueError('Meerdere authenticatieblokken: handmatige controle nodig.')
+            files[dashboard] = before.strip() + '\n'
+            files[auth] = marker + after.rstrip() + '\n'
+            return f'<script src="./{dashboard}"></script>\n<script src="./{auth}"></script>'
+        name = f'assets/js/script-{number}.js'
+        files[name] = code.strip() + '\n'
+        return f'<script src="./{name}"></script>'
+    # Classic scripts stay classic and retain their original order and shared scope.
+    html = re.sub(r'<script\s*>(.*?)</script\s*>', script, html, flags=re.I | re.S)
+    if not files:
+        raise ValueError('Geen inline CSS of klassieke scripts gevonden.')
+    files['index.html'] = html
+    manifest = {
+        'source_sha256': hashlib.sha256(text.encode('utf-8')).hexdigest(),
+        'files': {name: hashlib.sha256(content.encode('utf-8')).hexdigest()
+                  for name, content in files.items()},
+        'warning': 'Opsplitsing is geen browser-, JavaScript- of beveiligingstest.'
+    }
+    files['split-manifest.json'] = json.dumps(manifest, indent=2) + '\n'
+    files['README.txt'] = (
+        'Dashboard opgesplitst; bronbestand niet gewijzigd.\n'
+        'Start vanuit deze map: python -m http.server 8080\n'
+        'Open http://localhost:8080 en test registratie, login, alle pagina’s,\n'
+        'donkere modus, rekeningen, transacties en back-up.\n'
+        'Controleer ook de browserconsole. Lokale login vereist een toegestane\n'
+        'redirect-URL in Supabase. Publiceer daarna index.html en assets samen.\n'
+        'Financiële opslag blijft lokaal; sociale providers moeten ingesteld zijn.\n'
+    )
+    output.parent.mkdir(parents=True, exist_ok=True)
+    temporary = Path(tempfile.mkdtemp(prefix='.dashboard-split-', dir=output.parent))
+    try:
+        for name, content in files.items():
+            target = temporary / name
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_text(content, encoding='utf-8')
+        temporary.rename(output)
+    except Exception:
+        shutil.rmtree(temporary, ignore_errors=True)
+        raise
+    print(f'{len(files)} bestanden aangemaakt in {output}. Bron niet gewijzigd.')
 
-html = pattern.sub(extract, source)
-files['index.html'] = html
-if not counts['css'] or not counts['js']:
-    raise SystemExit('STOP: no inline CSS or JavaScript found; check the source export.')
-# Verify a lossless round trip before writing anything.
-reconstructed = html
-for path, body in files.items():
-    if path.endswith('.css'):
-        reconstructed = reconstructed.replace(f'<link rel="stylesheet" href="./{path}">', '<style>'+body+'</style>', 1)
-    elif path.endswith('.js'):
-        expression = re.compile(r'<script([^>]*) src="\./'+re.escape(path)+r'"></script>')
-        reconstructed = expression.sub(lambda m: '<script'+m.group(1)+'>'+body+'</script>', reconstructed, count=1)
-if reconstructed != source:
-    raise SystemExit('STOP: lossless reconstruction failed; no files written.')
-files['README.md'] = '''# Saldoa — split dashboard\n\nGenerated from the complete HTML source without changing functionality.\n\n- index.html: screens and forms.\n- assets/css/: extracted styles in original order.\n- assets/js/: extracted scripts in original order.\n\nPublish index.html and assets together at the repository root. Keep the\nprevious version until all files are uploaded. Do not publish index.html first.\n\nAccount login uses Supabase Auth. Financial data is still stored locally.\nSocial providers require configuration. No app PIN has been implemented.\nThe hidden design-preview code is preserved to avoid changing behavior.\n\nServe locally with python -m http.server 8000 from this directory.\nA lossless reconstruction check passed; this is not a browser or login test.\n'''
-manifest = {path: hashlib.sha256(text.encode('utf-8')).hexdigest() for path, text in files.items()}
-files['manifest.json'] = json.dumps({'source_sha256': hashlib.sha256(source.encode('utf-8')).hexdigest(), 'files': manifest}, indent=2)+'\n'
-for path, text in files.items():
-    destination = output / path
-    destination.parent.mkdir(parents=True, exist_ok=True)
-    destination.write_text(text, encoding='utf-8')
-print(f'Created {len(files)} complete files in {output}. Live files were not overwritten.')
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Veilig dashboard opsplitsen')
+    parser.add_argument('source', type=Path)
+    parser.add_argument('--output', type=Path, default=Path('dist'))
+    args = parser.parse_args()
+    try:
+        split(args.source, args.output)
+    except (ValueError, OSError) as error:
+        parser.exit(1, f'Niet uitgevoerd: {error}\n')
