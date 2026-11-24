@@ -69,12 +69,79 @@
   body[data-theme="dark"] .menu-dropdown button[aria-current="page"], body[data-theme="dark"] .tag { background:#303f70; color:#dce5ff; }
   body[data-theme="dark"] .pos { color:#6ee7a0; }
   body[data-theme="dark"] .neg { color:#fca5a5; }
+  .auth-screen { min-height:100vh; display:grid; place-items:center; padding:24px; background:radial-gradient(ellipse at top,#dbeafe,transparent 65%),#f4f6fa; }
+  .auth-card { width:100%; max-width:440px; background:#fff; padding:32px; border:1px solid #e5e9f2; border-radius:20px; box-shadow:0 16px 48px #1d24331a; }
+  .auth-logo { display:inline-grid; place-items:center; width:52px; height:52px; border-radius:14px; background:#2563eb; color:white; font-size:26px; margin-bottom:16px; }
+  .auth-card h1 { font-size:26px; margin:0 0 8px; }
+  .auth-intro { color:#64748b; line-height:1.6; margin-bottom:24px; }
+  .auth-form { display:flex; flex-direction:column; gap:10px; }
+  .auth-form label { font-size:14px; font-weight:600; }
+  .auth-form input { width:100%; padding:12px; margin-bottom:6px; }
+  .auth-form button, .auth-demo { width:100%; padding:12px; font-weight:600; }
+  .auth-form button:disabled { cursor:not-allowed; opacity:.55; }
+  .auth-notice { padding:12px; border-radius:8px; background:#eff6ff; color:#1e40af; font-size:13px; line-height:1.6; }
+  .auth-footer { margin:16px 0 0; font-size:12px; color:#64748b; line-height:1.6; }
+  .session-bar { display:flex; flex-wrap:wrap; align-items:center; gap:10px; margin-bottom:16px; }
+  body[data-theme="dark"] .auth-screen { background:radial-gradient(ellipse at top,#1e3a5f,transparent 65%),#101722; }
+  body[data-theme="dark"] .auth-card { background:#1b2636; border-color:#344256; }
+  body[data-theme="dark"] .auth-intro, body[data-theme="dark"] .auth-footer { color:#b6c5d9; }
+  body[data-theme="dark"] .auth-notice { background:#203452; color:#dbeafe; }
   @media(max-width:420px) { .overview-account { flex-direction:column; align-items:flex-start; gap:8px; } }
   @media(max-width:600px) { header { padding:12px 16px; } header h1 { font-size:16px; } main { padding:16px; } form input, form select { max-width:100%; } .card { overflow-x:auto; } }
 </style>
 </head>
 <body>
-<header>
+<section id="authScreen" class="auth-screen" aria-labelledby="authTitle">
+  <div class="auth-card">
+    <div class="auth-logo" aria-hidden="true">▤</div>
+    <h1 id="authTitle">Maak je account aan</h1>
+    <p class="auth-intro">Registreer je eenmalig om je persoonlijke financiële dashboard te gebruiken. Heb je al een account? Kies hieronder voor inloggen.</p>
+    <div role="group" aria-label="Account aanmaken of inloggen" style="display:flex;gap:8px;margin-bottom:20px">
+      <button type="button" id="showRegistration" aria-pressed="true">Registreren</button>
+      <button type="button" id="showLogin" class="secondary" aria-pressed="false">Ik heb al een account</button>
+    </div>
+    <form id="registrationForm" class="auth-form">
+      <fieldset style="border:0;padding:0;margin:0;display:flex;flex-direction:column;gap:10px">
+        <label for="registerFirstName">Voornaam *</label>
+        <input id="registerFirstName" name="first_name" autocomplete="given-name" placeholder="Je voornaam" required maxlength="100">
+        <label for="registerLastName">Achternaam *</label>
+        <input id="registerLastName" name="last_name" autocomplete="family-name" placeholder="Je achternaam" required maxlength="100">
+        <label for="registerCountry">Land van verblijf *</label>
+        <select id="registerCountry" name="country" autocomplete="country" required>
+          <option value="">Kies je land</option>
+          <option value="BE">België</option><option value="NL">Nederland</option>
+          <option value="DE">Duitsland</option><option value="FR">Frankrijk</option>
+          <option value="LU">Luxemburg</option><option value="OTHER">Ander land (later specificeren)</option>
+        </select>
+        <label for="registerEmail">E-mailadres *</label>
+        <input id="registerEmail" name="email" type="email" autocomplete="email" placeholder="jij@voorbeeld.nl" required>
+        <label for="registerPassword">Wachtwoord *</label>
+        <input id="registerPassword" name="password" type="password" autocomplete="new-password" minlength="12" placeholder="Minimaal 12 tekens" required>
+        <label for="registerPasswordConfirm">Herhaal je wachtwoord *</label>
+        <input id="registerPasswordConfirm" name="password_confirm" type="password" autocomplete="new-password" minlength="12" placeholder="Herhaal je wachtwoord" required>
+        <p class="note">Testversie: gebruik nog geen echte financiële gegevens. Privacyverklaring en gebruiksvoorwaarden moeten vóór een publieke lancering beschikbaar zijn.</p>
+        <button type="submit">Testaccount aanmaken</button>
+      </fieldset>
+    </form>
+    <form id="loginForm" class="auth-form" hidden>
+      <label for="loginEmail">E-mailadres</label>
+      <input id="loginEmail" name="email" type="email" autocomplete="username" placeholder="jij@voorbeeld.nl" required>
+      <label for="loginPassword">Wachtwoord</label>
+      <input id="loginPassword" name="password" type="password" autocomplete="current-password" placeholder="Je wachtwoord" required>
+      <button type="submit">Inloggen</button>
+    </form>
+    <p class="note" style="text-align:center">Of gebruik je bestaande account</p>
+    <div class="auth-form" aria-label="Sociale aanmeldopties">
+      <button type="button" class="secondary" disabled>Doorgaan met Google (Gmail)</button>
+      <button type="button" class="secondary" disabled>Doorgaan met Facebook</button>
+      <button type="button" class="secondary" disabled>Doorgaan met Apple</button>
+    </div>
+    <div id="authStatus" class="auth-notice" role="status" aria-live="polite">Registratie en login zijn gekoppeld aan Supabase Auth. Sociale login en de zescijferige app-pincode zijn nog niet actief.</div>
+    <button type="button" id="openLocalDemo" class="secondary auth-demo" hidden disabled>Demo uitgeschakeld</button>
+    <p class="auth-footer">Accountgegevens worden naar jouw Supabase-project gestuurd. Financiële gegevens blijven voorlopig lokaal in deze browser, gescheiden per account. Dit is geen versleutelde opslag of databasebeveiliging. Bestaande demo-gegevens worden niet automatisch geïmporteerd. Gebruik deze testversie nog niet voor gevoelige gegevens.</p>
+  </div>
+</section>
+<header id="appHeader" hidden>
   <h1>💼 Mijn Financieel Dashboard</h1>
   <div class="navigation">
     <button type="button" id="menuToggle" class="menu-toggle" aria-label="Navigatie openen" aria-expanded="false" aria-controls="dashboardMenu"><span></span><span></span><span></span></button>
@@ -88,7 +155,8 @@
     </nav>
   </div>
 </header>
-<main>
+<main id="appMain" hidden>
+<div class="session-bar"><span class="tag" id="sessionLabel">Account</span><button type="button" class="secondary" id="closeLocalDemo">Uitloggen</button></div>
 <h2 id="pageHeading" class="page-heading" tabindex="-1">Overzicht</h2>
 
 <section class="card" data-page="overzicht" style="border-top:4px solid #ff6200">
@@ -198,6 +266,10 @@
 </div>
 
 <div class="card" data-page="instellingen" hidden>
+  <h2>Beveiliging: website en app</h2>
+  <p><strong>Website:</strong> e-mail en wachtwoord of een ingesteld sociaal account. Extra verificatie wordt bij de authenticatiekoppeling bepaald. Geen app-pincode op de website.</p>
+  <p><strong>App:</strong> kies na je eerste registratie en verificatie een pincode van exact 6 cijfers en bevestig deze. Die is verplicht bij iedere opening van het dashboard en bij terugkeer vanuit de achtergrond. Dit geldt ook bij registratie via Google, Facebook of Apple.</p>
+  <p class="note">Gepland, nog niet actief: controle en begrenzing van mislukte pogingen, oplopende wachttijd, veilige opslag via de beveiligde opslag van het apparaat en herstel via opnieuw aanmelden met je account en extra verificatie. Geen leesbare pincode in browseropslag of de database. De app moet gevoelige schermen afschermen in de achtergrond en het dashboard vergrendelen voordat het weer zichtbaar wordt.</p>
   <h2>Opslag & synchronisatie</h2>
   <p>Je gegevens worden lokaal in deze browser bewaard. Ze worden niet automatisch met andere apparaten gedeeld. Download regelmatig een back-up.</p>
   <p>Crypto-synchronisatie wordt iedere 5 minuten geprobeerd terwijl deze pagina openstaat. Er is nog geen achtergrondserver of automatische bankimport.</p>
@@ -210,6 +282,7 @@
     <li><strong>Wallets & crypto:</strong> voeg een publieke Ethereum-wallet of een handmatige crypto-positie toe. Andere netwerken en tokens worden nog niet automatisch uitgelezen.</li>
     <li><strong>Uitgaven & inkomsten:</strong> registreer transacties op een rekening. Overboekingen verplaatsen geld tussen eigen rekeningen en tellen niet als inkomsten of uitgaven.</li>
     <li><strong>Instellingen & back-up:</strong> download of herstel je volledige gegevensbestand. Herstellen vervangt de huidige gegevens na bevestiging.</li>
+    <li><strong>Registratie & login:</strong> het ontwerp start met verplichte registratie: voornaam, achternaam, land, e-mail en wachtwoord, of aanmelden via Google, Facebook of Apple met aanvulling van ontbrekende profielgegevens. E-mailregistratie en login zijn gekoppeld aan Supabase Auth. E-mailbevestiging moet in Supabase ingeschakeld zijn. Sociale knoppen blijven uitgeschakeld tot de providers zijn ingesteld. De demo-toegang is verwijderd. Financiële gegevens worden lokaal per account opgeslagen, niet in Supabase; deze browseropslag is niet versleuteld en is geen beveiliging tegen andere gebruikers van hetzelfde apparaat. Cloudopslag met databasebeleid (RLS) volgt in een aparte stap. Op de website gebruik je de accountaanmelding, met een afzonderlijk in te stellen extra verificatiemethode. Alleen in de echte app kies en bevestig je na eerste registratie en verificatie een pincode van exact 6 cijfers. Deze is verplicht bij iedere dashboardopening en bij terugkeer vanuit de achtergrond, ook voor sociale accounts. App-vergrendeling is nog niet geïmplementeerd in dit website-ontwerp.</li>
   </ul>
   <h2>Veiligheid & beperkingen</h2>
   <p>Voer nooit seed phrases, private keys of geheime API-sleutels in. Een publieke website is geen beveiligde financiële backend. Back-upbestanden bevatten persoonlijke financiële gegevens: bewaar ze veilig.</p>
@@ -275,8 +348,9 @@ function showPage(page) {
 }
 dashboardMenu.addEventListener('click', e => { const button = e.target.closest('[data-nav]'); if (button) showPage(button.dataset.nav); });
 
-let data = JSON.parse(localStorage.getItem("dashboardData") || '{"accounts":[],"tx":[]}');
-const save = () => localStorage.setItem("dashboardData", JSON.stringify(data));
+let storageKey = null;
+let data = {accounts:[], tx:[]};
+const save = () => { if (storageKey) localStorage.setItem(storageKey, JSON.stringify(data)); };
 const systemTheme = window.matchMedia('(prefers-color-scheme: dark)');
 function applyTheme() {
   const preference = ['light','dark','system'].includes(data.preferences?.theme) ? data.preferences.theme : 'light';
@@ -592,7 +666,8 @@ document.getElementById('backupFile').addEventListener('change', async e => {
     const restored = parsed.data || parsed;
     if (!validBackup(restored)) throw new Error('Dit is geen geldige dashboard-back-up.');
     if (!confirm('Alle huidige gegevens vervangen? Download eerst een back-up als je die wilt bewaren.')) return;
-    localStorage.setItem('dashboardData', JSON.stringify(restored));
+    if (!storageKey) throw new Error('Log eerst in.');
+    localStorage.setItem(storageKey, JSON.stringify(restored));
     data = restored; render(); setStatus('Back-up hersteld. Saldi zijn overgenomen, niet opnieuw berekend.');
   } catch(err) { alert('Herstellen mislukt: '+err.message); }
   finally { e.target.value=''; }
@@ -608,9 +683,132 @@ function render() {
 }
 render();
 
-// Start automatische sync: direct bij openen en daarna elke 5 minuten
-if (data.accounts.some(isCrypto)) syncAll();
-setInterval(() => syncAll(), SYNC_MS);
+// Supabase Auth via HTTPS REST; geen externe SDK nodig.
+const SUPABASE_URL = 'https://kawmgixplawbuzxagrdp.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_gEwRETB_aOdqEo4BhfFESg_ZscvGZ60';
+const SESSION_KEY = 'banking.supabase.session';
+let authSession = null;
+let localDemoOpen = false;
+const authScreen = document.getElementById('authScreen');
+const appHeader = document.getElementById('appHeader');
+const appMain = document.getElementById('appMain');
+const authMessage = text => { document.getElementById('authStatus').textContent = text; };
+async function authRequest(path, body, token, method='POST') {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 20000);
+  try {
+    const response = await fetch(SUPABASE_URL+'/auth/v1/'+path, {
+      method, signal:controller.signal,
+      headers:{apikey:SUPABASE_KEY, 'Content-Type':'application/json', ...(token ? {Authorization:'Bearer '+token} : {})},
+      ...(body !== undefined ? {body:JSON.stringify(body)} : {})
+    });
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(result.msg || result.error_description || result.message || 'Aanmelden mislukt ('+response.status+').');
+    return result;
+  } finally { clearTimeout(timeout); }
+}
+function lockDashboard() {
+  localDemoOpen = false; authSession = null; storageKey = null;
+  sessionStorage.removeItem(SESSION_KEY);
+  data = {accounts:[],tx:[]}; closeMenu();
+  appHeader.hidden = true; appMain.hidden = true; authScreen.hidden = false;
+  render();
+}
+async function enterDashboard(session) {
+  if (!session.access_token || !session.refresh_token) throw new Error('Geen geldige sessie ontvangen.');
+  const user = await authRequest('user', undefined, session.access_token, 'GET');
+  if (!user.email_confirmed_at) throw new Error('Bevestig eerst je e-mailadres.');
+  const profile = user.user_metadata || {};
+  if (!profile.first_name || !profile.last_name || !profile.country) throw new Error('Je profiel is nog niet compleet. Gebruik voorlopig een nieuw e-mailtestaccount via dit registratieformulier.');
+  authSession = {...session, user};
+  storageKey = 'dashboardData:user:'+user.id;
+  try { data = JSON.parse(localStorage.getItem(storageKey) || '{"accounts":[],"tx":[]}'); }
+  catch { data = {accounts:[],tx:[]}; }
+  if (!validBackup(data)) data = {accounts:[],tx:[]};
+  sessionStorage.setItem(SESSION_KEY, JSON.stringify({refresh_token:session.refresh_token}));
+  document.getElementById('sessionLabel').textContent = 'Ingelogd: '+user.email;
+  localDemoOpen = true; authScreen.hidden = true; appHeader.hidden = false; appMain.hidden = false;
+  render(); showPage('overzicht');
+  if (data.accounts.some(isCrypto)) syncAll();
+}
+async function withAuthForm(form, action) {
+  const button = form.querySelector('button[type="submit"]'); button.disabled = true;
+  authMessage('Even wachten…');
+  try { await action(); }
+  catch(err) { authMessage(err.name === 'AbortError' ? 'Verbinding duurt te lang. Probeer opnieuw.' : err.message); }
+  finally { button.disabled = false; }
+}
+document.getElementById('registrationForm').addEventListener('submit', e => {
+  e.preventDefault();
+  withAuthForm(e.target, async () => {
+    const f = new FormData(e.target);
+    if (f.get('password') !== f.get('password_confirm')) throw new Error('De wachtwoorden komen niet overeen.');
+    const first = String(f.get('first_name')).trim(), last = String(f.get('last_name')).trim();
+    if (!first || !last) throw new Error('Vul je voornaam en achternaam in.');
+    const redirect = location.origin + location.pathname;
+    const result = await authRequest('signup?redirect_to='+encodeURIComponent(redirect), {
+      email:String(f.get('email')).trim(), password:f.get('password'),
+      data:{first_name:first, last_name:last, country:f.get('country')}
+    });
+    e.target.reset();
+    if (result.access_token) await enterDashboard(result);
+    else { showAuthMode(false); authMessage('Als registratie mogelijk is, ontvang je een bevestigingsmail. Open de link en log daarna in. Controleer ook je spammap.'); }
+  });
+});
+document.getElementById('loginForm').addEventListener('submit', e => {
+  e.preventDefault();
+  withAuthForm(e.target, async () => {
+    const f = new FormData(e.target);
+    const result = await authRequest('token?grant_type=password', {email:String(f.get('email')).trim(),password:f.get('password')});
+    await enterDashboard(result); e.target.reset();
+  });
+});
+function showAuthMode(register) {
+  document.getElementById('registrationForm').hidden = !register;
+  document.getElementById('loginForm').hidden = register;
+  document.getElementById('authTitle').textContent = register ? 'Maak je account aan' : 'Welkom terug';
+  document.getElementById('showRegistration').setAttribute('aria-pressed', String(register));
+  document.getElementById('showLogin').setAttribute('aria-pressed', String(!register));
+}
+document.getElementById('showRegistration').addEventListener('click', () => showAuthMode(true));
+document.getElementById('showLogin').addEventListener('click', () => showAuthMode(false));
+document.getElementById('closeLocalDemo').addEventListener('click', async () => {
+  const token = authSession?.access_token;
+  lockDashboard(); showAuthMode(false); authMessage('Lokaal uitgelogd.');
+  document.getElementById('loginEmail').focus();
+  if (token) {
+    try { await authRequest('logout', undefined, token); }
+    catch { authMessage('Lokaal uitgelogd; server kon niet worden bereikt. Andere sessies zijn mogelijk nog actief.'); }
+  }
+});
+async function restoreSession() {
+  try {
+    const fragment = new URLSearchParams(location.hash.slice(1));
+    if (fragment.has('access_token') || fragment.has('error_description')) {
+      history.replaceState(null,'',location.pathname+location.search);
+      if (fragment.has('error_description')) throw new Error(fragment.get('error_description'));
+      await enterDashboard({access_token:fragment.get('access_token'),refresh_token:fragment.get('refresh_token')});
+      return;
+    }
+    const stored = JSON.parse(sessionStorage.getItem(SESSION_KEY) || 'null');
+    if (stored?.refresh_token) {
+      authMessage('Sessie controleren…');
+      await enterDashboard(await authRequest('token?grant_type=refresh_token', {refresh_token:stored.refresh_token}));
+    }
+  } catch(err) { lockDashboard(); showAuthMode(false); authMessage('Meld je opnieuw aan: '+err.message); }
+}
+restoreSession();
+// Sessies opnieuw valideren en vernieuwen; synchronisatie alleen na inloggen.
+setInterval(async () => {
+  if (!localDemoOpen || !authSession) return;
+  try {
+    const session = await authRequest('token?grant_type=refresh_token', {refresh_token:authSession.refresh_token});
+    if (!localDemoOpen) return;
+    authSession = session;
+    sessionStorage.setItem(SESSION_KEY,JSON.stringify({refresh_token:session.refresh_token}));
+    syncAll();
+  } catch { lockDashboard(); showAuthMode(false); authMessage('Sessie niet meer bevestigd. Log opnieuw in.'); }
+}, SYNC_MS);
 </script>
 </body>
 </html>
