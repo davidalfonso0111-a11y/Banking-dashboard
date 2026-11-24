@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mijn Financieel Dashboard</title>
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: system-ui, sans-serif; margin: 0; background: #f4f6fa; color: #1d2433; }
+  header { background: #1d2433; color: #fff; padding: 16px 24px; }
+  header h1 { margin: 0; font-size: 20px; }
+  main { padding: 20px; max-width: 1100px; margin: auto; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+  .card { background: #fff; border-radius: 12px; padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,.08); margin-bottom: 16px; }
+  .card h2 { font-size: 16px; margin: 0 0 12px; }
+  .big { font-size: 26px; font-weight: 700; }
+  .pos { color: #15803d; } .neg { color: #b91c1c; }
+  input, select, button { padding: 8px; border: 1px solid #cbd2e0; border-radius: 6px; font-size: 14px; }
+  button { background: #2563eb; color: #fff; border: none; cursor: pointer; }
+  button.secondary { background: #64748b; }
+  button.danger { background: #b91c1c; }
+  form { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { text-align: left; padding: 8px; border-bottom: 1px solid #e5e9f2; }
+  .tag { background: #e0e7ff; color: #3730a3; padding: 2px 8px; border-radius: 99px; font-size: 12px; }
+  .row-actions button { padding: 4px 8px; font-size: 12px; }
+  .note { font-size: 12px; color: #64748b; }
+  #status { font-size: 12px; color: #334155; margin: 0 0 8px; }
+</style>
+</head>
+<body>
+<header><h1>💼 Mijn Financieel Dashboard</h1></header>
+<main>
+
+<div class="grid">
+  <div class="card"><h2>Totaal vermogen</h2><div class="big" id="totaal">€0,00</div><div class="note">Rekeningen + crypto</div></div>
+  <div class="card"><h2>Deze maand: inkomsten</h2><div class="big pos" id="inkMaand">€0,00</div></div>
+  <div class="card"><h2>Deze maand: uitgaven</h2><div class="big neg" id="uitMaand">€0,00</div></div>
+  <div class="card"><h2>Deze maand: saldo</h2><div class="big" id="saldoMaand">€0,00</div></div>
+</div>
+
+<div class="card">
+  <h2>Rekeningen & wallets</h2>
+  <p id="status">Nog niet gesynchroniseerd.</p>
+  <form id="accForm">
+    <input name="naam" placeholder="Naam (bijv. ING, Trust Wallet)" required>
+    <select name="type">
+      <option value="bank">Bankrekening</option>
+      <option value="crypto">Crypto (handmatig)</option>
+      <option value="wallet">Wallet (adres, automatisch)</option>
+      <option value="spaar">Spaarrekening</option>
+    </select>
+    <input name="saldo" type="number" step="0.01" placeholder="Saldo in € (bank)" id="accSaldo">
+    <input name="coin" placeholder="Coin (bijv. BTC)" id="accCoin" style="display:none">
+    <input name="hoeveelheid" type="number" step="any" placeholder="Hoeveelheid" id="accQty" style="display:none">
+    <input name="adres" placeholder="EVM-adres (0x...)" id="accAdres" style="display:none; min-width:280px">
+    <button>Toevoegen</button>
+  </form>
+  <table>
+    <thead><tr><th>Naam</th><th>Type</th><th>Waarde</th><th></th></tr></thead>
+    <tbody id="accList"></tbody>
+  </table>
+  <p class="note">Wallets: alleen je publieke adres, nooit een seed phrase of private key. Koersen (CoinGecko) en ETH-saldo worden elke 5 minuten automatisch bijgewerkt terwijl deze pagina open staat. Tokens worden nog niet meegeteld.</p>
+  <form><button type="button" class="secondary" onclick="syncAll(true)">Nu synchroniseren</button></form>
+</div>
+
+<div class="card">
+  <h2>Transactie toevoegen</h2>
+  <form id="txForm">
+    <select name="soort">
+      <option value="uit">Uitgave</option>
+      <option value="in">Inkomst</option>
+    </select>
+    <input name="bedrag" type="number" step="0.01" min="0" placeholder="Bedrag €" required>
+    <input name="omschrijving" placeholder="Omschrijving (bijv. Albert Heijn)" required id="omschr">
+    <input name="datum" type="date" required id="datum">
+    <select name="categorie" id="cat"></select>
+    <button>Opslaan</button>
+  </form>
+  <p class="note">Categorie wordt automatisch voorgesteld op basis van de omschrijving. Je kunt dit altijd aanpassen.</p>
+</div>
+
+<div class="card">
+  <h2>Transacties</h2>
+  <form id="filterForm">
+    <input type="month" id="maandFilter">
+    <button class="secondary" type="button" onclick="exportCSV()">Exporteer CSV</button>
+  </form>
+  <table>
+    <thead><tr><th>Datum</th><th>Omschrijving</th><th>Categorie</th><th>Bedrag</th><th></th></tr></thead>
+    <tbody id="txList"></tbody>
+  </table>
+</div>
+
+<div class="card">
+  <h2>Uitgaven per categorie (deze maand)</h2>
+  <table><tbody id="catSum"></tbody></table>
+</div>
+
+</main>
+<script>
+const CATEGORIEEN = {
+  "Boodschappen": ["albert heijn","jumbo","lidl","aldi","picnic","plus"],
+  "Wonen": ["huur","hypotheek","energie","vattenfall","eneco","water","gemeente"],
+  "Vervoer": ["ns","shell","esso","tankstation","uber","ov","parkeer"],
+  "Abonnementen": ["netflix","spotify","disney","icloud","google one","adobe"],
+  "Horeca & uit": ["restaurant","cafe","café","bar","mcdonald","thuisbezorgd","uber eats"],
+  "Zorg": ["apotheek","tandarts","huisarts","zorg"],
+  "Salaris": ["salaris","loon"],
+  "Overig": []
+};
+
+// Coins met automatische koers (CoinGecko-id) en het publieke ETH-RPC-endpoint voor wallets
+const COINGECKO_IDS = { BTC: "bitcoin", ETH: "ethereum", SOL: "solana", BNB: "binancecoin" };
+const ETH_RPC = "https://ethereum-rpc.publicnode.com";
+const SYNC_MS = 5 * 60 * 1000;
+
+let data = JSON.parse(localStorage.getItem("dashboardData") || '{"accounts":[],"tx":[]}');
+const save = () => localStorage.setItem("dashboardData", JSON.stringify(data));
+const eur = n => new Intl.NumberFormat("nl-NL",{style:"currency",currency:"EUR"}).format(n);
+const isCrypto = a => a.type === "crypto" || a.type === "wallet";
+
+// Vul categorie-select
+const catSelect = document.getElementById("cat");
+Object.keys(CATEGORIEEN).forEach(c => catSelect.add(new Option(c, c)));
+
+// Automatische categorisering
+function autoCat(omschr, soort) {
+  if (soort === "in") return "Salaris";
+  const t = omschr.toLowerCase();
+  for (const [cat, woorden] of Object.entries(CATEGORIEEN)) {
+    if (woorden.some(w => t.includes(w))) return cat;
+  }
+  return "Overig";
+}
+document.getElementById("omschr").addEventListener("input", e => {
+  const soort = document.querySelector('#txForm [name=soort]').value;
+  catSelect.value = autoCat(e.target.value, soort);
+});
+document.getElementById("datum").valueAsDate = new Date();
+document.getElementById("maandFilter").value = new Date().toISOString().slice(0,7);
+
+// Accounts: velden tonen afhankelijk van type
+const accType = document.querySelector('#accForm [name=type]');
+accType.addEventListener("change", () => {
+  const t = accType.value;
+  const crypto = t === "crypto";
+  const wallet = t === "wallet";
+  document.getElementById("accCoin").style.display = crypto ? "" : "none";
+  document.getElementById("accQty").style.display = crypto ? "" : "none";
+  document.getElementById("accAdres").style.display = wallet ? "" : "none";
+  document.getElementById("accSaldo").style.display = (crypto || wallet) ? "none" : "";
+});
+
+document.getElementById("accForm").addEventListener("submit", e => {
+  e.preventDefault();
+  const f = new FormData(e.target);
+  if (f.get("type") === "wallet") {
+    const adres = (f.get("adres") || "").trim();
+    if (!/^0x[a-fA-F0-9]{40}$/.test(adres)) { alert("Ongeldig EVM-adres. Gebruik een adres dat begint met 0x en 40 tekens heeft."); return; }
+    data.accounts.push({ id: Date.now(), naam: f.get("naam"), type: "wallet", adres, coin: "ETH", qty: 0, prijs: 0 });
+    save(); e.target.reset(); accType.dispatchEvent(new Event("change")); render();
+    syncAll(true);
+    return;
+  }
+  const acc = { id: Date.now(), naam: f.get("naam"), type: f.get("type") };
+  if (acc.type === "crypto") {
+    acc.coin = (f.get("coin")||"").toUpperCase();
+    acc.qty = parseFloat(f.get("hoeveelheid")) || 0;
+    acc.prijs = COINGECKO_IDS[acc.coin] ? 0 : (parseFloat(prompt(`Huidige prijs van 1 ${acc.coin} in €?`)) || 0);
+  } else {
+    acc.saldo = parseFloat(f.get("saldo")) || 0;
+  }
+  data.accounts.push(acc); save(); e.target.reset(); accType.dispatchEvent(new Event("change")); render();
+  if (COINGECKO_IDS[acc.coin]) syncAll(true);
+});
+
+function accWaarde(a) { return isCrypto(a) ? a.qty * a.prijs : a.saldo; }
+
+function renderAccounts() {
+  const tb = document.getElementById("accList");
+  tb.innerHTML = data.accounts.map(a => `
+    <tr>
+      <td>${a.naam}</td>
+      <td><span class="tag">${a.type}${a.coin ? " · "+a.coin : ""}${a.type==="wallet" ? " · "+a.adres.slice(0,6)+"…"+a.adres.slice(-4) : ""}</span></td>
+      <td>${eur(accWaarde(a))}${isCrypto(a) ? `<div class="note">${a.qty} × ${eur(a.prijs)}${COINGECKO_IDS[a.coin] ? " (auto)" : ""}</div>` : ""}</td>
+      <td class="row-actions">
+        ${a.type==="wallet" ? "" : `<button class="secondary" onclick="updateAcc(${a.id})">Bijwerken</button>`}
+        <button class="danger" onclick="delAcc(${a.id})">×</button>
+      </td>
+    </tr>`).join("") || `<tr><td colspan="4" class="note">Nog geen rekeningen toegevoegd.</td></tr>`;
+}
+
+function updateAcc(id) {
+  const a = data.accounts.find(x => x.id === id);
+  if (isCrypto(a)) {
+    const q = prompt(`Nieuwe hoeveelheid ${a.coin}?`, a.qty);
+    if (q !== null) a.qty = parseFloat(q) || 0;
+    if (!COINGECKO_IDS[a.coin]) {
+      const p = prompt(`Nieuwe prijs per ${a.coin} in €?`, a.prijs);
+      if (p !== null) a.prijs = parseFloat(p) || 0;
+    }
+  } else {
+    const s = prompt("Nieuw saldo in €?", a.saldo);
+    if (s !== null) a.saldo = parseFloat(s) || 0;
+  }
+  save(); render();
+}
+function delAcc(id) {
+  if (confirm("Rekening verwijderen?")) { data.accounts = data.accounts.filter(a => a.id !== id); save(); render(); }
+}
+
+// Automatische synchronisatie: koersen (CoinGecko) + ETH-saldo van wallets (publieke RPC)
+function setStatus(t) { document.getElementById("status").textContent = t; }
+
+async function syncAll(manual) {
+  const cryptos = data.accounts.filter(isCrypto);
+  if (!cryptos.length) { setStatus("Geen crypto-posities om te synchroniseren."); return; }
+  setStatus("Synchroniseren…");
+  try {
+    const ids = [...new Set(cryptos.map(a => COINGECKO_IDS[a.coin]).filter(Boolean))];
+    if (ids.length) {
+      const r = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${ids.join(",")}&vs_currencies=eur`);
+      if (!r.ok) throw new Error("CoinGecko HTTP " + r.status);
+      const p = await r.json();
+      cryptos.forEach(a => { const id = COINGECKO_IDS[a.coin]; if (id && p[id]) a.prijs = p[id].eur; });
+    }
+    for (const a of data.accounts.filter(x => x.type === "wallet")) {
+      const r = await fetch(ETH_RPC, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "eth_getBalance", params: [a.adres, "latest"] })
+      });
+      if (!r.ok) throw new Error("RPC HTTP " + r.status);
+      const j = await r.json();
+      if (!j.result) throw new Error("Geen saldo ontvangen");
+      a.qty = Number(BigInt(j.result)) / 1e18;
+    }
+    save(); render();
+    setStatus("Laatst gesynchroniseerd: " + new Date().toLocaleTimeString("nl-NL"));
+  } catch (err) {
+    setStatus("Sync mislukt: " + err.message + (manual ? "" : " (volgende poging over 5 min)"));
+  }
+}
+
+// Transacties
+document.getElementById("txForm").addEventListener("submit", e => {
+  e.preventDefault();
+  const f = new FormData(e.target);
+  data.tx.push({
+    id: Date.now(),
+    soort: f.get("soort"),
+    bedrag: parseFloat(f.get("bedrag")),
+    omschrijving: f.get("omschrijving"),
+    datum: f.get("datum"),
+    categorie: f.get("categorie")
+  });
+  save(); e.target.reset(); document.getElementById("datum").valueAsDate = new Date(); render();
+});
+function delTx(id) { data.tx = data.tx.filter(t => t.id !== id); save(); render(); }
+document.getElementById("maandFilter").addEventListener("change", render);
+
+function renderTx() {
+  const m = document.getElementById("maandFilter").value;
+  const lijst = data.tx.filter(t => !m || t.datum.startsWith(m)).sort((a,b)=>b.datum.localeCompare(a.datum));
+  document.getElementById("txList").innerHTML = lijst.map(t => `
+    <tr>
+      <td>${t.datum}</td>
+      <td>${t.omschrijving}</td>
+      <td><span class="tag">${t.categorie}</span></td>
+      <td class="${t.soort==="in"?"pos":"neg"}">${t.soort==="in"?"+":"−"}${eur(t.bedrag)}</td>
+      <td class="row-actions"><button class="danger" onclick="delTx(${t.id})">×</button></td>
+    </tr>`).join("") || `<tr><td colspan="5" class="note">Geen transacties in deze periode.</td></tr>`;
+  return lijst;
+}
+
+function renderTotals() {
+  const m = document.getElementById("maandFilter").value;
+  const maand = data.tx.filter(t => t.datum.startsWith(m));
+  const inK = maand.filter(t=>t.soort==="in").reduce((s,t)=>s+t.bedrag,0);
+  const uitK = maand.filter(t=>t.soort==="uit").reduce((s,t)=>s+t.bedrag,0);
+  document.getElementById("inkMaand").textContent = eur(inK);
+  document.getElementById("uitMaand").textContent = eur(uitK);
+  const saldoEl = document.getElementById("saldoMaand");
+  saldoEl.textContent = eur(inK-uitK);
+  saldoEl.className = "big " + (inK-uitK>=0?"pos":"neg");
+
+  const totaal = data.accounts.reduce((s,a)=>s+accWaarde(a),0);
+  document.getElementById("totaal").textContent = eur(totaal);
+
+  const perCat = {};
+  maand.filter(t=>t.soort==="uit").forEach(t => perCat[t.categorie]=(perCat[t.categorie]||0)+t.bedrag);
+  document.getElementById("catSum").innerHTML = Object.entries(perCat).sort((a,b)=>b[1]-a[1])
+    .map(([c,v]) => `<tr><td>${c}</td><td style="text-align:right">${eur(v)}</td></tr>`).join("")
+    || `<tr><td class="note">Geen uitgaven deze maand.</td></tr>`;
+}
+
+function exportCSV() {
+  const lijst = renderTx();
+  const rows = [["datum","omschrijving","categorie","soort","bedrag"], ...lijst.map(t=>[t.datum,t.omschrijving,t.categorie,t.soort,t.bedrag])];
+  const csv = rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(";")).join("\n");
+  const url = URL.createObjectURL(new Blob([csv],{type:"text/csv"}));
+  const a = Object.assign(document.createElement("a"), {href:url, download:"transacties.csv"});
+  a.click();
+}
+
+function render() { renderAccounts(); renderTx(); renderTotals(); }
+render();
+
+// Start automatische sync: direct bij openen en daarna elke 5 minuten
+if (data.accounts.some(isCrypto)) syncAll();
+setInterval(() => syncAll(), SYNC_MS);
+</script>
+</body>
+</html>
