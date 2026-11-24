@@ -5,810 +5,97 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Mijn Financieel Dashboard</title>
 <style>
-  * { box-sizing: border-box; }
-  body { font-family: system-ui, sans-serif; margin: 0; background: #f4f6fa; color: #1d2433; }
-  header { background: #1d2433; color: #fff; padding: 16px 24px; }
-  header h1 { margin: 0; font-size: 20px; }
-  main { padding: 20px; max-width: 1100px; margin: auto; }
-  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
-  .card { background: #fff; border-radius: 12px; padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,.08); margin-bottom: 16px; }
-  .card h2 { font-size: 16px; margin: 0 0 12px; }
-  .big { font-size: 26px; font-weight: 700; }
-  .pos { color: #15803d; } .neg { color: #b91c1c; }
-  input, select, button { padding: 8px; border: 1px solid #cbd2e0; border-radius: 6px; font-size: 14px; }
-  button { background: #2563eb; color: #fff; border: none; cursor: pointer; }
-  button.secondary { background: #64748b; }
-  button.danger { background: #b91c1c; }
-  form { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
-  table { width: 100%; border-collapse: collapse; font-size: 14px; }
-  th, td { text-align: left; padding: 8px; border-bottom: 1px solid #e5e9f2; }
-  .tag { background: #e0e7ff; color: #3730a3; padding: 2px 8px; border-radius: 99px; font-size: 12px; }
-  .row-actions button { padding: 4px 8px; font-size: 12px; }
-  .note { font-size: 12px; color: #64748b; }
-  #status { font-size: 12px; color: #334155; margin: 0 0 8px; }
-  header { display:flex; align-items:center; justify-content:space-between; gap:16px; position:relative; }
-  .navigation { position:relative; }
-  .menu-toggle { background:transparent; border:1px solid #64748b; width:44px; height:44px; display:flex; flex-direction:column; justify-content:center; align-items:center; gap:5px; }
-  .menu-toggle span { display:block; width:22px; height:2px; background:#fff; border-radius:2px; }
-  .menu-dropdown { position:absolute; right:0; top:52px; width:260px; padding:8px; background:#fff; color:#1d2433; border:1px solid #e5e9f2; border-radius:12px; box-shadow:0 12px 36px #0003; z-index:20; }
-  .menu-dropdown button { display:block; width:100%; text-align:left; background:transparent; color:#1d2433; padding:12px; margin:2px 0; }
-  .menu-dropdown button:hover, .menu-dropdown button:focus-visible { background:#f1f5f9; }
-  .menu-dropdown button[aria-current="page"] { background:#e0e7ff; color:#3730a3; font-weight:700; }
-  [hidden] { display:none !important; }
-  .page-heading { margin:0 0 16px; font-size:22px; }
-  .table-scroll { overflow-x:auto; }
-  .account-group-heading { font-size:14px; color:#475569; margin:20px 0 10px; }
-  .account-stack { display:flex; flex-direction:column; gap:10px; margin-bottom:16px; }
-  .overview-account { display:flex; align-items:center; justify-content:space-between; gap:16px; padding:16px; background:#f8fafc; border:1px solid #e5e9f2; border-radius:10px; }
-  .overview-account-info { min-width:0; overflow-wrap:anywhere; }
-  .overview-account-name { display:block; margin-bottom:4px; }
-  .overview-account-value { font-weight:700; font-size:20px; white-space:nowrap; }
-  .wallet-visibility { display:flex; align-items:center; gap:10px; font-weight:600; cursor:pointer; }
-  .wallet-visibility input { width:18px; height:18px; accent-color:#2563eb; }
-  :root { color-scheme:light; background:#f4f6fa; }
-  html[data-theme="dark"] { color-scheme:dark; background:#101722; }
-  html[data-theme="light"] { color-scheme:light; background:#f4f6fa; }
-  body { min-height:100vh; transition:background-color .2s, color .2s; }
-  body[data-theme="dark"] { color-scheme:dark; background:#101722; color:#e5edf7; }
-  body[data-theme="dark"] main { background:#101722; }
-  body[data-theme="dark"] .card { box-shadow:0 2px 12px rgba(0,0,0,.3); }
-  body[data-theme="dark"] input::placeholder { color:#94a3b8; }
-  body[data-theme="dark"] button.secondary { background:#3b4b63; color:#f1f5f9; }
-  body[data-theme="dark"] button.danger { background:#991b1b; color:#fff; }
-  body[data-theme="dark"] .menu-toggle { background:transparent; border-color:#64748b; }
-  body[data-theme="dark"] input[type="checkbox"] { accent-color:#60a5fa; }
-  body[data-theme="dark"] header { background:#111827; }
-  body[data-theme="dark"] .card, body[data-theme="dark"] .menu-dropdown { background:#1b2636; color:#e5edf7; }
-  body[data-theme="dark"] input, body[data-theme="dark"] select { background:#101722; color:#e5edf7; border-color:#475569; }
-  body[data-theme="dark"] th, body[data-theme="dark"] td { border-color:#344256; }
-  body[data-theme="dark"] .overview-account { background:#142031; border-color:#344256; }
-  body[data-theme="dark"] .note, body[data-theme="dark"] .account-group-heading, body[data-theme="dark"] #status { color:#b6c5d9; }
-  body[data-theme="dark"] .menu-dropdown { border-color:#344256; }
-  body[data-theme="dark"] .menu-dropdown button { color:#e5edf7; }
-  body[data-theme="dark"] .menu-dropdown button:hover, body[data-theme="dark"] .menu-dropdown button:focus-visible { background:#344256; }
-  body[data-theme="dark"] .menu-dropdown button[aria-current="page"], body[data-theme="dark"] .tag { background:#303f70; color:#dce5ff; }
-  body[data-theme="dark"] .pos { color:#6ee7a0; }
-  body[data-theme="dark"] .neg { color:#fca5a5; }
-  .auth-screen { min-height:100vh; display:grid; place-items:center; padding:24px; background:radial-gradient(ellipse at top,#dbeafe,transparent 65%),#f4f6fa; }
-  .auth-card { width:100%; max-width:440px; background:#fff; padding:32px; border:1px solid #e5e9f2; border-radius:20px; box-shadow:0 16px 48px #1d24331a; }
-  .auth-logo { display:inline-grid; place-items:center; width:52px; height:52px; border-radius:14px; background:#2563eb; color:white; font-size:26px; margin-bottom:16px; }
-  .auth-card h1 { font-size:26px; margin:0 0 8px; }
-  .auth-intro { color:#64748b; line-height:1.6; margin-bottom:24px; }
-  .auth-form { display:flex; flex-direction:column; gap:10px; }
-  .auth-form label { font-size:14px; font-weight:600; }
-  .auth-form input { width:100%; padding:12px; margin-bottom:6px; }
-  .auth-form button, .auth-demo { width:100%; padding:12px; font-weight:600; }
-  .auth-form button:disabled { cursor:not-allowed; opacity:.55; }
-  .auth-notice { padding:12px; border-radius:8px; background:#eff6ff; color:#1e40af; font-size:13px; line-height:1.6; }
-  .auth-footer { margin:16px 0 0; font-size:12px; color:#64748b; line-height:1.6; }
-  .session-bar { display:flex; flex-wrap:wrap; align-items:center; gap:10px; margin-bottom:16px; }
-  body[data-theme="dark"] .auth-screen { background:radial-gradient(ellipse at top,#1e3a5f,transparent 65%),#101722; }
-  body[data-theme="dark"] .auth-card { background:#1b2636; border-color:#344256; }
-  body[data-theme="dark"] .auth-intro, body[data-theme="dark"] .auth-footer { color:#b6c5d9; }
-  body[data-theme="dark"] .auth-notice { background:#203452; color:#dbeafe; }
-  @media(max-width:420px) { .overview-account { flex-direction:column; align-items:flex-start; gap:8px; } }
-  @media(max-width:600px) { header { padding:12px 16px; } header h1 { font-size:16px; } main { padding:16px; } form input, form select { max-width:100%; } .card { overflow-x:auto; } }
+*{box-sizing:border-box}body{font-family:system-ui,sans-serif;margin:0;background:#f4f6fa;color:#1d2433;min-height:100vh;transition:background-color .2s,color .2s}header{background:#1d2433;color:#fff;padding:16px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px;position:relative}header h1{margin:0;font-size:20px}main{padding:20px;max-width:1100px;margin:auto}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}.card{background:#fff;border-radius:12px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,.08);margin-bottom:16px}.card h2{font-size:16px;margin:0 0 12px}.big{font-size:26px;font-weight:700}.pos{color:#15803d}.neg{color:#b91c1c}input,select,button{padding:8px;border:1px solid #cbd2e0;border-radius:6px;font-size:14px}button{background:#2563eb;color:#fff;border:none;cursor:pointer}button.secondary{background:#64748b}button.danger{background:#b91c1c}form{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}table{width:100%;border-collapse:collapse;font-size:14px}th,td{text-align:left;padding:8px;border-bottom:1px solid #e5e9f2}.tag{background:#e0e7ff;color:#3730a3;padding:2px 8px;border-radius:99px;font-size:12px}.row-actions button{padding:4px 8px;font-size:12px}.note{font-size:12px;color:#64748b}#status{font-size:12px;color:#334155;margin:0 0 8px}.navigation{position:relative}.menu-toggle{background:transparent;border:1px solid #64748b;width:44px;height:44px;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:5px}.menu-toggle span{display:block;width:22px;height:2px;background:#fff;border-radius:2px}.menu-dropdown{position:absolute;right:0;top:52px;width:260px;padding:8px;background:#fff;color:#1d2433;border:1px solid #e5e9f2;border-radius:12px;box-shadow:0 12px 36px #0003;z-index:20}.menu-dropdown button{display:block;width:100%;text-align:left;background:transparent;color:#1d2433;padding:12px;margin:2px 0}.menu-dropdown button:hover,.menu-dropdown button:focus-visible{background:#f1f5f9}.menu-dropdown button[aria-current="page"]{background:#e0e7ff;color:#3730a3;font-weight:700}[hidden]{display:none!important}.page-heading{margin:0 0 16px;font-size:22px}.table-scroll{overflow-x:auto}.account-group-heading{font-size:14px;color:#475569;margin:20px 0 10px}.account-stack{display:flex;flex-direction:column;gap:10px;margin-bottom:16px}.overview-account{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px;background:#f8fafc;border:1px solid #e5e9f2;border-radius:10px}.overview-account-info{min-width:0;overflow-wrap:anywhere}.overview-account-name{display:block;margin-bottom:4px}.overview-account-value{font-weight:700;font-size:20px;white-space:nowrap}.wallet-visibility{display:flex;align-items:center;gap:10px;font-weight:600;cursor:pointer}.wallet-visibility input{width:18px;height:18px;accent-color:#2563eb}:root{color-scheme:light;background:#f4f6fa}html[data-theme="dark"]{color-scheme:dark;background:#101722}html[data-theme="light"]{color-scheme:light;background:#f4f6fa}body[data-theme="dark"]{color-scheme:dark;background:#101722;color:#e5edf7}body[data-theme="dark"] main{background:#101722}body[data-theme="dark"] .card{box-shadow:0 2px 12px rgba(0,0,0,.3)}body[data-theme="dark"] input::placeholder{color:#94a3b8}body[data-theme="dark"] button.secondary{background:#3b4b63;color:#f1f5f9}body[data-theme="dark"] button.danger{background:#991b1b;color:#fff}body[data-theme="dark"] .menu-toggle{background:transparent;border-color:#64748b}body[data-theme="dark"] input[type="checkbox"]{accent-color:#60a5fa}body[data-theme="dark"] header{background:#111827}body[data-theme="dark"] .card,body[data-theme="dark"] .menu-dropdown{background:#1b2636;color:#e5edf7}body[data-theme="dark"] input,body[data-theme="dark"] select{background:#101722;color:#e5edf7;border-color:#475569}body[data-theme="dark"] th,body[data-theme="dark"] td{border-color:#344256}body[data-theme="dark"] .overview-account{background:#142031;border-color:#344256}body[data-theme="dark"] .note,body[data-theme="dark"] .account-group-heading,body[data-theme="dark"] #status{color:#b6c5d9}body[data-theme="dark"] .menu-dropdown{border-color:#344256}body[data-theme="dark"] .menu-dropdown button{color:#e5edf7}body[data-theme="dark"] .menu-dropdown button:hover,body[data-theme="dark"] .menu-dropdown button:focus-visible{background:#344256}body[data-theme="dark"] .menu-dropdown button[aria-current="page"],body[data-theme="dark"] .tag{background:#303f70;color:#dce5ff}body[data-theme="dark"] .pos{color:#6ee7a0}body[data-theme="dark"] .neg{color:#fca5a5}.auth-screen{min-height:100vh;display:grid;place-items:center;padding:24px;background:radial-gradient(ellipse at top,#dbeafe,transparent 65%),#f4f6fa}.auth-card{width:100%;max-width:440px;background:#fff;padding:32px;border:1px solid #e5e9f2;border-radius:20px;box-shadow:0 16px 48px #1d24331a}.auth-logo{display:inline-grid;place-items:center;width:52px;height:52px;border-radius:14px;background:#2563eb;color:white;font-size:26px;margin-bottom:16px}.auth-card h1{font-size:26px;margin:0 0 8px}.auth-intro{color:#64748b;line-height:1.6;margin-bottom:24px}.auth-form{display:flex;flex-direction:column;gap:10px}.auth-form label{font-size:14px;font-weight:600}.auth-form input{width:100%;padding:12px;margin-bottom:6px}.auth-form button,.auth-demo{width:100%;padding:12px;font-weight:600}.auth-form button:disabled{cursor:not-allowed;opacity:.55}.auth-notice{padding:12px;border-radius:8px;background:#eff6ff;color:#1e40af;font-size:13px;line-height:1.6}.auth-footer{margin:16px 0 0;font-size:12px;color:#64748b;line-height:1.6}.session-bar{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-bottom:16px}body[data-theme="dark"] .auth-screen{background:radial-gradient(ellipse at top,#1e3a5f,transparent 65%),#101722}body[data-theme="dark"] .auth-card{background:#1b2636;border-color:#344256}body[data-theme="dark"] .auth-intro,body[data-theme="dark"] .auth-footer{color:#b6c5d9}body[data-theme="dark"] .auth-notice{background:#203452;color:#dbeafe}@media(max-width:420px){.overview-account{flex-direction:column;align-items:flex-start;gap:8px}}@media(max-width:600px){header{padding:12px 16px}header h1{font-size:16px}main{padding:16px}form input,form select{max-width:100%}.card{overflow-x:auto}}
 </style>
 </head>
 <body>
-<section id="authScreen" class="auth-screen" aria-labelledby="authTitle">
-  <div class="auth-card">
-    <div class="auth-logo" aria-hidden="true">▤</div>
-    <h1 id="authTitle">Maak je account aan</h1>
-    <p class="auth-intro">Registreer je eenmalig om je persoonlijke financiële dashboard te gebruiken. Heb je al een account? Kies hieronder voor inloggen.</p>
-    <div role="group" aria-label="Account aanmaken of inloggen" style="display:flex;gap:8px;margin-bottom:20px">
-      <button type="button" id="showRegistration" aria-pressed="true">Registreren</button>
-      <button type="button" id="showLogin" class="secondary" aria-pressed="false">Ik heb al een account</button>
-    </div>
-    <form id="registrationForm" class="auth-form">
-      <fieldset style="border:0;padding:0;margin:0;display:flex;flex-direction:column;gap:10px">
-        <label for="registerFirstName">Voornaam *</label>
-        <input id="registerFirstName" name="first_name" autocomplete="given-name" placeholder="Je voornaam" required maxlength="100">
-        <label for="registerLastName">Achternaam *</label>
-        <input id="registerLastName" name="last_name" autocomplete="family-name" placeholder="Je achternaam" required maxlength="100">
-        <label for="registerCountry">Land van verblijf *</label>
-        <select id="registerCountry" name="country" autocomplete="country" required>
-          <option value="">Kies je land</option>
-          <option value="BE">België</option><option value="NL">Nederland</option>
-          <option value="DE">Duitsland</option><option value="FR">Frankrijk</option>
-          <option value="LU">Luxemburg</option><option value="OTHER">Ander land (later specificeren)</option>
-        </select>
-        <label for="registerEmail">E-mailadres *</label>
-        <input id="registerEmail" name="email" type="email" autocomplete="email" placeholder="jij@voorbeeld.nl" required>
-        <label for="registerPassword">Wachtwoord *</label>
-        <input id="registerPassword" name="password" type="password" autocomplete="new-password" minlength="12" placeholder="Minimaal 12 tekens" required>
-        <label for="registerPasswordConfirm">Herhaal je wachtwoord *</label>
-        <input id="registerPasswordConfirm" name="password_confirm" type="password" autocomplete="new-password" minlength="12" placeholder="Herhaal je wachtwoord" required>
-        <p class="note">Testversie: gebruik nog geen echte financiële gegevens. Privacyverklaring en gebruiksvoorwaarden moeten vóór een publieke lancering beschikbaar zijn.</p>
-        <button type="submit">Testaccount aanmaken</button>
-      </fieldset>
-    </form>
-    <form id="loginForm" class="auth-form" hidden>
-      <label for="loginEmail">E-mailadres</label>
-      <input id="loginEmail" name="email" type="email" autocomplete="username" placeholder="jij@voorbeeld.nl" required>
-      <label for="loginPassword">Wachtwoord</label>
-      <input id="loginPassword" name="password" type="password" autocomplete="current-password" placeholder="Je wachtwoord" required>
-      <button type="submit">Inloggen</button>
-    </form>
-    <p class="note" style="text-align:center">Of gebruik je bestaande account</p>
-    <div class="auth-form" aria-label="Sociale aanmeldopties">
-      <button type="button" class="secondary" disabled>Doorgaan met Google (Gmail)</button>
-      <button type="button" class="secondary" disabled>Doorgaan met Facebook</button>
-      <button type="button" class="secondary" disabled>Doorgaan met Apple</button>
-    </div>
-    <div id="authStatus" class="auth-notice" role="status" aria-live="polite">Registratie en login zijn gekoppeld aan Supabase Auth. Sociale login en de zescijferige app-pincode zijn nog niet actief.</div>
-    <button type="button" id="openLocalDemo" class="secondary auth-demo" hidden disabled>Demo uitgeschakeld</button>
-    <p class="auth-footer">Accountgegevens worden naar jouw Supabase-project gestuurd. Financiële gegevens blijven voorlopig lokaal in deze browser, gescheiden per account. Dit is geen versleutelde opslag of databasebeveiliging. Bestaande demo-gegevens worden niet automatisch geïmporteerd. Gebruik deze testversie nog niet voor gevoelige gegevens.</p>
-  </div>
-</section>
-<header id="appHeader" hidden>
-  <h1>💼 Mijn Financieel Dashboard</h1>
-  <div class="navigation">
-    <button type="button" id="menuToggle" class="menu-toggle" aria-label="Navigatie openen" aria-expanded="false" aria-controls="dashboardMenu"><span></span><span></span><span></span></button>
-    <nav id="dashboardMenu" class="menu-dropdown" aria-label="Dashboard navigatie" hidden>
-      <button type="button" data-nav="overzicht" aria-current="page">📊 Overzicht</button>
-      <button type="button" data-nav="rekeningen">🏦 Rekeningen</button>
-      <button type="button" data-nav="wallets">👛 Wallets & crypto</button>
-      <button type="button" data-nav="transacties">↔ Uitgaven & inkomsten</button>
-      <button type="button" data-nav="instellingen">⚙ Instellingen & back-up</button>
-      <button type="button" data-nav="documentatie">📖 Documentatie</button>
-    </nav>
-  </div>
-</header>
+<section id="authScreen" class="auth-screen" aria-labelledby="authTitle"><div class="auth-card">
+<div class="auth-logo" aria-hidden="true">▤</div><h1 id="authTitle">Maak je account aan</h1><p class="auth-intro">Registreer je eenmalig om je persoonlijke financiële dashboard te gebruiken. Heb je al een account? Kies hieronder voor inloggen.</p>
+<div role="group" aria-label="Account aanmaken of inloggen" style="display:flex;gap:8px;margin-bottom:20px"><button type="button" id="showRegistration" aria-pressed="true">Registreren</button><button type="button" id="showLogin" class="secondary" aria-pressed="false">Ik heb al een account</button></div>
+<form id="registrationForm" class="auth-form"><fieldset style="border:0;padding:0;margin:0;display:flex;flex-direction:column;gap:10px">
+<label for="registerFirstName">Voornaam *</label><input id="registerFirstName" name="first_name" autocomplete="given-name" placeholder="Je voornaam" required maxlength="100">
+<label for="registerLastName">Achternaam *</label><input id="registerLastName" name="last_name" autocomplete="family-name" placeholder="Je achternaam" required maxlength="100">
+<label for="registerCountry">Land van verblijf *</label><select id="registerCountry" name="country" autocomplete="country" required><option value="">Kies je land</option><option value="BE">België</option><option value="NL">Nederland</option><option value="DE">Duitsland</option><option value="FR">Frankrijk</option><option value="LU">Luxemburg</option><option value="OTHER">Ander land (later specificeren)</option></select>
+<label for="registerEmail">E-mailadres *</label><input id="registerEmail" name="email" type="email" autocomplete="email" placeholder="jij@voorbeeld.nl" required>
+<label for="registerPassword">Wachtwoord *</label><input id="registerPassword" name="password" type="password" autocomplete="new-password" minlength="12" placeholder="Minimaal 12 tekens" required>
+<label for="registerPasswordConfirm">Herhaal je wachtwoord *</label><input id="registerPasswordConfirm" name="password_confirm" type="password" autocomplete="new-password" minlength="12" placeholder="Herhaal je wachtwoord" required>
+<p class="note">Testversie: gebruik nog geen echte financiële gegevens. Privacyverklaring en gebruiksvoorwaarden moeten vóór een publieke lancering beschikbaar zijn.</p><button type="submit">Testaccount aanmaken</button></fieldset></form>
+<form id="loginForm" class="auth-form" hidden><label for="loginEmail">E-mailadres</label><input id="loginEmail" name="email" type="email" autocomplete="username" placeholder="jij@voorbeeld.nl" required><label for="loginPassword">Wachtwoord</label><input id="loginPassword" name="password" type="password" autocomplete="current-password" placeholder="Je wachtwoord" required><button type="submit">Inloggen</button></form>
+<p class="note" style="text-align:center">Of gebruik je bestaande account</p><div class="auth-form" aria-label="Sociale aanmeldopties"><button type="button" class="secondary" data-provider="google">Doorgaan met Google (Gmail)</button><button type="button" class="secondary" data-provider="facebook">Doorgaan met Facebook</button><button type="button" class="secondary" data-provider="apple">Doorgaan met Apple</button><p class="note">Sociale login werkt pas nadat de gekozen provider in Supabase is geconfigureerd. Ontbrekende profielgegevens vul je na aanmelden aan.</p></div>
+<div id="authStatus" class="auth-notice" role="status" aria-live="polite">Registratie en login zijn gekoppeld aan Supabase Auth. Sociale login vereist providerinstellingen. De zescijferige app-pincode is nog niet actief; op deze website wordt geen app-pincode gevraagd.</div>
+<button type="button" id="openLocalDemo" class="secondary auth-demo" hidden disabled>Demo uitgeschakeld</button><p class="auth-footer">Accountgegevens worden naar jouw Supabase-project gestuurd. Financiële gegevens blijven voorlopig lokaal in deze browser, gescheiden per account. Dit is geen versleutelde opslag of databasebeveiliging. Bestaande demo-gegevens worden niet automatisch geïmporteerd. Gebruik deze testversie nog niet voor gevoelige gegevens.</p>
+</div></section>
+<section id="confirmationScreen" class="auth-screen" aria-labelledby="confirmationTitle" hidden><div class="auth-card"><div id="confirmationIcon" class="auth-logo" aria-hidden="true">✓</div><h1 id="confirmationTitle">Je e-mailadres is bevestigd</h1><p id="confirmationMessage" class="auth-intro" role="status" aria-live="polite"></p><button type="button" id="confirmationContinue" class="auth-demo">Naar mijn dashboard</button><button type="button" id="confirmationLogin" class="secondary auth-demo" style="margin-top:10px" hidden>Terug naar inloggen</button><p class="auth-footer">Gebruik voorlopig alleen testgegevens. Financiële gegevens worden nog lokaal in je browser opgeslagen.</p></div></section>
+<header id="appHeader" hidden><h1>💼 Mijn Financieel Dashboard</h1><div class="navigation"><button type="button" id="menuToggle" class="menu-toggle" aria-label="Navigatie openen" aria-expanded="false" aria-controls="dashboardMenu"><span></span><span></span><span></span></button><nav id="dashboardMenu" class="menu-dropdown" aria-label="Dashboard navigatie" hidden><button type="button" data-nav="overzicht" aria-current="page">📊 Overzicht</button><button type="button" data-nav="rekeningen">🏦 Rekeningen</button><button type="button" data-nav="wallets">👛 Wallets & crypto</button><button type="button" data-nav="transacties">↔ Uitgaven & inkomsten</button><button type="button" data-nav="instellingen">⚙ Instellingen & back-up</button><button type="button" data-nav="documentatie">📖 Documentatie</button></nav></div></header>
 <main id="appMain" hidden>
-<div class="session-bar"><span class="tag" id="sessionLabel">Account</span><button type="button" class="secondary" id="closeLocalDemo">Uitloggen</button></div>
-<h2 id="pageHeading" class="page-heading" tabindex="-1">Overzicht</h2>
-
-<section class="card" data-page="overzicht" style="border-top:4px solid #ff6200">
-  <h2>🏦 Mijn rekeningen</h2>
-  <h3 class="account-group-heading">Zicht- & betaalrekeningen</h3>
-  <div id="overviewBankAccounts" class="account-stack"></div>
-  <h3 class="account-group-heading">Spaarrekeningen</h3>
-  <div id="overviewSavingsAccounts" class="account-stack"></div>
-  <p class="note">Handmatig bijgehouden saldi; nog geen live bankkoppeling.</p>
-  <button type="button" class="secondary" onclick="showPage('rekeningen')">Rekeningen beheren</button>
-</section>
-<section class="card" data-page="overzicht">
-  <label class="wallet-visibility" for="showWalletsOnOverview"><input type="checkbox" id="showWalletsOnOverview"> Wallets & crypto op de voorpagina tonen</label>
-  <p class="note">Deze keuze wordt bewaard. Verborgen wallets blijven meetellen in je totale vermogen.</p>
-  <div id="overviewWalletSection" hidden>
-    <h2>👛 Mijn wallets & crypto</h2>
-    <div id="overviewWalletAccounts" class="account-stack"></div>
-    <button type="button" class="secondary" onclick="showPage('wallets')">Wallets beheren</button>
-  </div>
-</section>
-
-<div class="grid" data-page="overzicht">
-  <div class="card"><h2>Totaal vermogen</h2><div class="big" id="totaal">€0,00</div><div class="note">Rekeningen + crypto</div></div>
-  <div class="card"><h2>Deze maand: inkomsten</h2><div class="big pos" id="inkMaand">€0,00</div></div>
-  <div class="card"><h2>Deze maand: uitgaven</h2><div class="big neg" id="uitMaand">€0,00</div></div>
-  <div class="card"><h2>Deze maand: saldo</h2><div class="big" id="saldoMaand">€0,00</div></div>
-</div>
-
-<div class="card" data-page="rekeningen wallets" hidden>
-  <h2 id="accountsHeading">Rekeningen</h2>
-  <p id="status">Nog niet gesynchroniseerd.</p>
-  <form id="accForm">
-    <input name="naam" placeholder="Naam (bijv. ING betaalrekening, Trust Wallet)" required>
-    <select name="type">
-      <option value="bank">Bankrekening</option>
-      <option value="crypto">Crypto (handmatig)</option>
-      <option value="wallet">Wallet (adres, automatisch)</option>
-      <option value="spaar">Spaarrekening</option>
-    </select>
-    <input name="saldo" type="number" step="0.01" placeholder="Saldo in € (bank)" id="accSaldo">
-    <input name="coin" placeholder="Coin (bijv. BTC)" id="accCoin" style="display:none">
-    <input name="hoeveelheid" type="number" step="any" placeholder="Hoeveelheid" id="accQty" style="display:none">
-    <input name="adres" placeholder="EVM-adres (0x...)" id="accAdres" style="display:none; min-width:280px">
-    <button>Toevoegen</button>
-  </form>
-  <table>
-    <thead><tr><th>Naam</th><th>Type</th><th>Waarde</th><th></th></tr></thead>
-    <tbody id="accList"></tbody>
-  </table>
-  <p class="note" data-wallet-only hidden>Wallets: alleen je publieke adres, nooit een seed phrase of private key. Koersen (CoinGecko) en ETH-saldo worden elke 5 minuten automatisch bijgewerkt terwijl deze pagina open staat. Tokens worden nog niet meegeteld.</p>
-  <form data-wallet-only hidden><button type="button" class="secondary" onclick="syncAll(true)">Nu synchroniseren</button></form>
-</div>
-
-<div class="card" data-page="transacties" hidden>
-  <h2>Transactie toevoegen</h2>
-  <form id="txForm">
-    <select name="soort" id="txSoort">
-      <option value="uit">Uitgave</option>
-      <option value="in">Inkomst</option>
-      <option value="transfer">Overboeking eigen rekeningen</option>
-    </select>
-    <select name="accountId" id="txAccount" required aria-label="Rekening"></select>
-    <select name="toAccountId" id="txToAccount" aria-label="Ontvangende rekening" style="display:none"></select>
-    <input name="bedrag" type="number" step="0.01" min="0.01" placeholder="Bedrag €" required>
-    <input name="omschrijving" placeholder="Omschrijving (bijv. Albert Heijn)" required id="omschr">
-    <input name="datum" type="date" required id="datum">
-    <select name="categorie" id="cat"></select>
-    <button>Opslaan</button>
-  </form>
-  <p class="note">Nieuwe inkomsten en uitgaven wijzigen het saldo van de gekozen rekening. Overboekingen wijzigen beide saldi, maar tellen niet als inkomsten of uitgaven. Bestaande transacties blijven ongekoppeld, zodat oude bedragen niet dubbel worden verwerkt.</p>
-</div>
-
-<div class="card" data-page="transacties" hidden>
-  <h2>Transacties</h2>
-  <form id="filterForm">
-    <input type="month" id="maandFilter">
-    <button class="secondary" type="button" onclick="exportCSV()">Exporteer CSV</button>
-  </form>
-  <table>
-    <thead><tr><th>Datum</th><th>Omschrijving</th><th>Categorie</th><th>Bedrag</th><th></th></tr></thead>
-    <tbody id="txList"></tbody>
-  </table>
-</div>
-
-<div class="card" data-page="instellingen" hidden>
-  <h2>Weergave</h2>
-  <label for="themePreference">Licht of donker</label>
-  <select id="themePreference">
-    <option value="light">Lichte modus</option>
-    <option value="dark">Donkere modus</option>
-    <option value="system">Systeeminstelling volgen</option>
-  </select>
-  <p class="note">Je keuze wordt in deze browser en in je back-up bewaard. Systeeminstelling volgt automatisch de weergave van je apparaat.</p>
-</div>
-<div class="card" data-page="instellingen" hidden>
-  <h2>Back-up en herstel</h2>
-  <button type="button" onclick="exportBackup()">Volledige back-up downloaden</button>
-  <button type="button" class="secondary" onclick="document.getElementById('backupFile').click()">Back-up herstellen</button>
-  <input type="file" id="backupFile" accept=".json,application/json" hidden>
-  <p class="note">Een back-up bevat je rekeningen, publieke wallet-adressen en transacties. Bewaar dit financiële bestand veilig. Herstellen vervangt alle huidige gegevens na bevestiging. Geen automatische cloudopslag.</p>
-</div>
-
-<div class="card" data-page="overzicht">
-  <h2>Uitgaven per categorie (geselecteerde maand)</h2>
-  <p class="note">Kies een maand bij Uitgaven & inkomsten om een andere periode te bekijken.</p>
-  <table><tbody id="catSum"></tbody></table>
-</div>
-
-<div class="card" data-page="instellingen" hidden>
-  <h2>Beveiliging: website en app</h2>
-  <p><strong>Website:</strong> e-mail en wachtwoord of een ingesteld sociaal account. Extra verificatie wordt bij de authenticatiekoppeling bepaald. Geen app-pincode op de website.</p>
-  <p><strong>App:</strong> kies na je eerste registratie en verificatie een pincode van exact 6 cijfers en bevestig deze. Die is verplicht bij iedere opening van het dashboard en bij terugkeer vanuit de achtergrond. Dit geldt ook bij registratie via Google, Facebook of Apple.</p>
-  <p class="note">Gepland, nog niet actief: controle en begrenzing van mislukte pogingen, oplopende wachttijd, veilige opslag via de beveiligde opslag van het apparaat en herstel via opnieuw aanmelden met je account en extra verificatie. Geen leesbare pincode in browseropslag of de database. De app moet gevoelige schermen afschermen in de achtergrond en het dashboard vergrendelen voordat het weer zichtbaar wordt.</p>
-  <h2>Opslag & synchronisatie</h2>
-  <p>Je gegevens worden lokaal in deze browser bewaard. Ze worden niet automatisch met andere apparaten gedeeld. Download regelmatig een back-up.</p>
-  <p>Crypto-synchronisatie wordt iedere 5 minuten geprobeerd terwijl deze pagina openstaat. Er is nog geen achtergrondserver of automatische bankimport.</p>
-</div>
-<div class="card" data-page="documentatie" hidden>
-  <h2>Zo gebruik je het dashboard</h2>
-  <ul>
-    <li><strong>Overzicht:</strong> alle zicht- en betaalrekeningen en spaarrekeningen staan geordend onder elkaar op de voorpagina, zonder keuzemenu. Met de optie ‘Wallets & crypto op de voorpagina tonen’ bepaal je of je wallets daar ook zichtbaar zijn. Deze voorkeur wordt in deze browser en in je back-up bewaard. Verborgen wallets blijven meetellen in je totale vermogen. Bekijk daaronder de inkomsten en uitgaven van de geselecteerde maand.</li>
-    <li><strong>Rekeningen:</strong> voeg bank- en spaarrekeningen toe met hun huidige saldo. Dit zijn handmatig bijgehouden rekeningen, geen bankkoppelingen.</li>
-    <li><strong>Wallets & crypto:</strong> voeg een publieke Ethereum-wallet of een handmatige crypto-positie toe. Andere netwerken en tokens worden nog niet automatisch uitgelezen.</li>
-    <li><strong>Uitgaven & inkomsten:</strong> registreer transacties op een rekening. Overboekingen verplaatsen geld tussen eigen rekeningen en tellen niet als inkomsten of uitgaven.</li>
-    <li><strong>Instellingen & back-up:</strong> download of herstel je volledige gegevensbestand. Herstellen vervangt de huidige gegevens na bevestiging.</li>
-    <li><strong>Registratie & login:</strong> het ontwerp start met verplichte registratie: voornaam, achternaam, land, e-mail en wachtwoord, of aanmelden via Google, Facebook of Apple met aanvulling van ontbrekende profielgegevens. E-mailregistratie en login zijn gekoppeld aan Supabase Auth. E-mailbevestiging moet in Supabase ingeschakeld zijn. Sociale knoppen blijven uitgeschakeld tot de providers zijn ingesteld. De demo-toegang is verwijderd. Financiële gegevens worden lokaal per account opgeslagen, niet in Supabase; deze browseropslag is niet versleuteld en is geen beveiliging tegen andere gebruikers van hetzelfde apparaat. Cloudopslag met databasebeleid (RLS) volgt in een aparte stap. Op de website gebruik je de accountaanmelding, met een afzonderlijk in te stellen extra verificatiemethode. Alleen in de echte app kies en bevestig je na eerste registratie en verificatie een pincode van exact 6 cijfers. Deze is verplicht bij iedere dashboardopening en bij terugkeer vanuit de achtergrond, ook voor sociale accounts. App-vergrendeling is nog niet geïmplementeerd in dit website-ontwerp.</li>
-  </ul>
-  <h2>Veiligheid & beperkingen</h2>
-  <p>Voer nooit seed phrases, private keys of geheime API-sleutels in. Een publieke website is geen beveiligde financiële backend. Back-upbestanden bevatten persoonlijke financiële gegevens: bewaar ze veilig.</p>
-  <p>Het dashboard kan geen betalingen uitvoeren. Crypto-waarden zijn indicatief en afhankelijk van de beschikbare koersen. Bestaande ongekoppelde transacties veranderen geen rekeningsaldo.</p>
-</div>
+<div class="session-bar"><span class="tag" id="sessionLabel">Account</span><button type="button" class="secondary" id="closeLocalDemo">Uitloggen</button></div><h2 id="pageHeading" class="page-heading" tabindex="-1">Overzicht</h2>
+<section class="card" data-page="overzicht" style="border-top:4px solid #ff6200"><h2>🏦 Mijn rekeningen</h2><h3 class="account-group-heading">Zicht- & betaalrekeningen</h3><div id="overviewBankAccounts" class="account-stack"></div><h3 class="account-group-heading">Spaarrekeningen</h3><div id="overviewSavingsAccounts" class="account-stack"></div><p class="note">Handmatig bijgehouden saldi; nog geen live bankkoppeling.</p><button type="button" class="secondary" onclick="showPage('rekeningen')">Rekeningen beheren</button></section>
+<section class="card" data-page="overzicht"><label class="wallet-visibility" for="showWalletsOnOverview"><input type="checkbox" id="showWalletsOnOverview"> Wallets & crypto op de voorpagina tonen</label><p class="note">Deze keuze wordt bewaard. Verborgen wallets blijven meetellen in je totale vermogen.</p><div id="overviewWalletSection" hidden><h2>👛 Mijn wallets & crypto</h2><div id="overviewWalletAccounts" class="account-stack"></div><button type="button" class="secondary" onclick="showPage('wallets')">Wallets beheren</button></div></section>
+<div class="grid" data-page="overzicht"><div class="card"><h2>Totaal vermogen</h2><div class="big" id="totaal">€0,00</div><div class="note">Rekeningen + crypto</div></div><div class="card"><h2>Deze maand: inkomsten</h2><div class="big pos" id="inkMaand">€0,00</div></div><div class="card"><h2>Deze maand: uitgaven</h2><div class="big neg" id="uitMaand">€0,00</div></div><div class="card"><h2>Deze maand: saldo</h2><div class="big" id="saldoMaand">€0,00</div></div></div>
+<div class="card" data-page="rekeningen wallets" hidden><h2 id="accountsHeading">Rekeningen</h2><p id="status">Nog niet gesynchroniseerd.</p><form id="accForm"><input name="naam" placeholder="Naam (bijv. ING betaalrekening, Trust Wallet)" required><select name="type"><option value="bank">Bankrekening</option><option value="crypto">Crypto (handmatig)</option><option value="wallet">Wallet (adres, automatisch)</option><option value="spaar">Spaarrekening</option></select><input name="saldo" type="number" step="0.01" placeholder="Saldo in € (bank)" id="accSaldo"><input name="coin" placeholder="Coin (bijv. BTC)" id="accCoin" style="display:none"><input name="hoeveelheid" type="number" step="any" placeholder="Hoeveelheid" id="accQty" style="display:none"><input name="adres" placeholder="EVM-adres (0x...)" id="accAdres" style="display:none;min-width:280px"><button>Toevoegen</button></form><table><thead><tr><th>Naam</th><th>Type</th><th>Waarde</th><th></th></tr></thead><tbody id="accList"></tbody></table><p class="note" data-wallet-only hidden>Wallets: alleen je publieke adres, nooit een seed phrase of private key. Koersen (CoinGecko) en ETH-saldo worden elke 5 minuten automatisch bijgewerkt terwijl deze pagina open staat. Tokens worden nog niet meegeteld.</p><form data-wallet-only hidden><button type="button" class="secondary" onclick="syncAll(true)">Nu synchroniseren</button></form></div>
+<div class="card" data-page="transacties" hidden><h2>Transactie toevoegen</h2><form id="txForm"><select name="soort" id="txSoort"><option value="uit">Uitgave</option><option value="in">Inkomst</option><option value="transfer">Overboeking eigen rekeningen</option></select><select name="accountId" id="txAccount" required aria-label="Rekening"></select><select name="toAccountId" id="txToAccount" aria-label="Ontvangende rekening" style="display:none"></select><input name="bedrag" type="number" step="0.01" min="0.01" placeholder="Bedrag €" required><input name="omschrijving" placeholder="Omschrijving (bijv. Albert Heijn)" required id="omschr"><input name="datum" type="date" required id="datum"><select name="categorie" id="cat"></select><button>Opslaan</button></form><p class="note">Nieuwe inkomsten en uitgaven wijzigen het saldo van de gekozen rekening. Overboekingen wijzigen beide saldi, maar tellen niet als inkomsten of uitgaven. Bestaande transacties blijven ongekoppeld, zodat oude bedragen niet dubbel worden verwerkt.</p></div>
+<div class="card" data-page="transacties" hidden><h2>Transacties</h2><form id="filterForm"><input type="month" id="maandFilter"><button class="secondary" type="button" onclick="exportCSV()">Exporteer CSV</button></form><table><thead><tr><th>Datum</th><th>Omschrijving</th><th>Categorie</th><th>Bedrag</th><th></th></tr></thead><tbody id="txList"></tbody></table></div>
+<div class="card" data-page="instellingen" hidden><h2>Weergave</h2><label for="themePreference">Licht of donker</label><select id="themePreference"><option value="light">Lichte modus</option><option value="dark">Donkere modus</option><option value="system">Systeeminstelling volgen</option></select><p class="note">Je keuze wordt in deze browser en in je back-up bewaard. Systeeminstelling volgt automatisch de weergave van je apparaat.</p></div>
+<div class="card" data-page="instellingen" hidden><h2>Back-up en herstel</h2><button type="button" onclick="exportBackup()">Volledige back-up downloaden</button><button type="button" class="secondary" onclick="document.getElementById('backupFile').click()">Back-up herstellen</button><input type="file" id="backupFile" accept=".json,application/json" hidden><p class="note">Een back-up bevat je rekeningen, publieke wallet-adressen en transacties. Bewaar dit financiële bestand veilig. Herstellen vervangt alle huidige gegevens na bevestiging. Geen automatische cloudopslag.</p></div>
+<div class="card" data-page="overzicht"><h2>Uitgaven per categorie (geselecteerde maand)</h2><p class="note">Kies een maand bij Uitgaven & inkomsten om een andere periode te bekijken.</p><table><tbody id="catSum"></tbody></table></div>
+<div class="card" data-page="instellingen" hidden><h2>Beveiliging: website en app</h2><p><strong>Website:</strong> e-mail en wachtwoord of een ingesteld sociaal account. Extra verificatie wordt bij de authenticatiekoppeling bepaald. Geen app-pincode op de website.</p><p><strong>App:</strong> kies na je eerste registratie en verificatie een pincode van exact 6 cijfers en bevestig deze. Die is verplicht bij iedere opening van het dashboard en bij terugkeer vanuit de achtergrond. Dit geldt ook bij registratie via Google, Facebook of Apple.</p><p class="note">Gepland, nog niet actief: controle en begrenzing van mislukte pogingen, oplopende wachttijd, veilige opslag via de beveiligde opslag van het apparaat en herstel via opnieuw aanmelden met je account en extra verificatie. Geen leesbare pincode in browseropslag of de database. De app moet gevoelige schermen afschermen in de achtergrond en het dashboard vergrendelen voordat het weer zichtbaar wordt.</p><h2>Opslag & synchronisatie</h2><p>Je gegevens worden lokaal in deze browser bewaard. Ze worden niet automatisch met andere apparaten gedeeld. Download regelmatig een back-up.</p><p>Crypto-synchronisatie wordt iedere 5 minuten geprobeerd terwijl deze pagina openstaat. Er is nog geen achtergrondserver of automatische bankimport.</p></div>
+<div class="card" data-page="documentatie" hidden><h2>Zo gebruik je het dashboard</h2><ul><li><strong>Overzicht:</strong> alle zicht- en betaalrekeningen en spaarrekeningen staan geordend onder elkaar op de voorpagina, zonder keuzemenu. Met de optie ‘Wallets & crypto op de voorpagina tonen’ bepaal je of je wallets daar ook zichtbaar zijn. Deze voorkeur wordt in deze browser en in je back-up bewaard. Verborgen wallets blijven meetellen in je totale vermogen. Bekijk daaronder de inkomsten en uitgaven van de geselecteerde maand.</li><li><strong>Rekeningen:</strong> voeg bank- en spaarrekeningen toe met hun huidige saldo. Dit zijn handmatig bijgehouden rekeningen, geen bankkoppelingen.</li><li><strong>Wallets & crypto:</strong> voeg een publieke Ethereum-wallet of een handmatige crypto-positie toe. Andere netwerken en tokens worden nog niet automatisch uitgelezen.</li><li><strong>Uitgaven & inkomsten:</strong> registreer transacties op een rekening. Overboekingen verplaatsen geld tussen eigen rekeningen en tellen niet als inkomsten of uitgaven.</li><li><strong>Instellingen & back-up:</strong> download of herstel je volledige gegevensbestand. Herstellen vervangt de huidige gegevens na bevestiging.</li><li><strong>Registratie & login:</strong> het ontwerp start met verplichte registratie: voornaam, achternaam, land, e-mail en wachtwoord, of aanmelden via Google, Facebook of Apple met aanvulling van ontbrekende profielgegevens. E-mailregistratie en login zijn gekoppeld aan Supabase Auth. E-mailbevestiging moet in Supabase ingeschakeld zijn. Sociale knoppen starten de Supabase-aanmelding; de providers moeten eerst in Supabase worden ingesteld. Ontbrekende profielgegevens vul je na sociale aanmelding aan. De demo-toegang is verwijderd. Financiële gegevens worden lokaal per account opgeslagen, niet in Supabase; deze browseropslag is niet versleuteld en is geen beveiliging tegen andere gebruikers van hetzelfde apparaat. Cloudopslag met databasebeleid (RLS) volgt in een aparte stap. Op de website gebruik je de accountaanmelding, met een afzonderlijk in te stellen extra verificatiemethode. Alleen in de echte app kies en bevestig je na eerste registratie en verificatie een pincode van exact 6 cijfers. Deze is verplicht bij iedere dashboardopening en bij terugkeer vanuit de achtergrond, ook voor sociale accounts. App-vergrendeling is nog niet geïmplementeerd in dit website-ontwerp.</li></ul><h2>Veiligheid & beperkingen</h2><p>Voer nooit seed phrases, private keys of geheime API-sleutels in. Een publieke website is geen beveiligde financiële backend. Back-upbestanden bevatten persoonlijke financiële gegevens: bewaar ze veilig.</p><p>Het dashboard kan geen betalingen uitvoeren. Crypto-waarden zijn indicatief en afhankelijk van de beschikbare koersen. Bestaande ongekoppelde transacties veranderen geen rekeningsaldo.</p></div>
 </main>
 <script>
-const CATEGORIEEN = {
-  "Boodschappen": ["albert heijn","jumbo","lidl","aldi","picnic","plus"],
-  "Wonen": ["huur","hypotheek","energie","vattenfall","eneco","water","gemeente"],
-  "Vervoer": ["ns","shell","esso","tankstation","uber","ov","parkeer"],
-  "Abonnementen": ["netflix","spotify","disney","icloud","google one","adobe"],
-  "Horeca & uit": ["restaurant","cafe","café","bar","mcdonald","thuisbezorgd","uber eats"],
-  "Zorg": ["apotheek","tandarts","huisarts","zorg"],
-  "Salaris": ["salaris","loon"],
-  "Overig": []
-};
-
-// Coins met automatische koers (CoinGecko-id) en het publieke ETH-RPC-endpoint voor wallets
-const COINGECKO_IDS = { BTC: "bitcoin", ETH: "ethereum", SOL: "solana", BNB: "binancecoin" };
-const ETH_RPC = "https://ethereum-rpc.publicnode.com";
-const SYNC_MS = 5 * 60 * 1000;
-
-let currentPage = 'overzicht';
-const pageTitles = {overzicht:'Overzicht', rekeningen:'Rekeningen', wallets:'Wallets & crypto', transacties:'Uitgaven & inkomsten', instellingen:'Instellingen & back-up', documentatie:'Documentatie'};
-const menuToggle = document.getElementById('menuToggle');
-const dashboardMenu = document.getElementById('dashboardMenu');
-function closeMenu(returnFocus = false) {
-  dashboardMenu.hidden = true;
-  menuToggle.setAttribute('aria-expanded', 'false');
-  menuToggle.setAttribute('aria-label', 'Navigatie openen');
-  if (returnFocus) menuToggle.focus();
-}
-menuToggle.addEventListener('click', () => {
-  const open = dashboardMenu.hidden;
-  dashboardMenu.hidden = !open;
-  menuToggle.setAttribute('aria-expanded', String(open));
-  menuToggle.setAttribute('aria-label', open ? 'Navigatie sluiten' : 'Navigatie openen');
-});
-document.addEventListener('click', e => { if (!e.target.closest('.navigation')) closeMenu(); });
-document.addEventListener('keydown', e => { if (e.key === 'Escape' && !dashboardMenu.hidden) closeMenu(true); });
-function showPage(page) {
-  if (!pageTitles[page]) return;
-  currentPage = page;
-  document.querySelectorAll('[data-page]').forEach(el => { el.hidden = !el.dataset.page.split(' ').includes(page); });
-  const heading = document.getElementById('pageHeading');
-  heading.textContent = pageTitles[page];
-  document.querySelectorAll('[data-nav]').forEach(button => {
-    if (button.dataset.nav === page) button.setAttribute('aria-current', 'page');
-    else button.removeAttribute('aria-current');
-  });
-  if (page === 'rekeningen' || page === 'wallets') {
-    const wallet = page === 'wallets';
-    document.getElementById('accountsHeading').textContent = pageTitles[page];
-    [...accType.options].forEach(option => { const cryptoType = ['crypto','wallet'].includes(option.value); option.disabled = cryptoType !== wallet; option.hidden = option.disabled; });
-    if (accType.selectedOptions[0].disabled) accType.value = wallet ? 'wallet' : 'bank';
-    accType.dispatchEvent(new Event('change'));
-    document.querySelectorAll('[data-wallet-only]').forEach(el => { el.hidden = !wallet; });
-    document.getElementById('status').hidden = !wallet;
-    renderAccounts();
-  }
-  closeMenu(); heading.focus();
-}
-dashboardMenu.addEventListener('click', e => { const button = e.target.closest('[data-nav]'); if (button) showPage(button.dataset.nav); });
-
-let storageKey = null;
-let data = {accounts:[], tx:[]};
-const save = () => { if (storageKey) localStorage.setItem(storageKey, JSON.stringify(data)); };
-const systemTheme = window.matchMedia('(prefers-color-scheme: dark)');
-function applyTheme() {
-  const preference = ['light','dark','system'].includes(data.preferences?.theme) ? data.preferences.theme : 'light';
-  const theme = preference === 'system' ? (systemTheme.matches ? 'dark' : 'light') : preference;
-  document.documentElement.dataset.theme = theme;
-  document.body.dataset.theme = theme;
-  document.getElementById('themePreference').value = preference;
-}
-document.getElementById('themePreference').addEventListener('change', e => {
-  data.preferences = {...data.preferences, theme:e.target.value};
-  save(); applyTheme();
-});
-systemTheme.addEventListener('change', applyTheme);
-applyTheme();
-const eur = n => new Intl.NumberFormat("nl-NL",{style:"currency",currency:"EUR"}).format(n);
-const isCrypto = a => a.type === "crypto" || a.type === "wallet";
-const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const money = n => Math.round((n + Number.EPSILON) * 100) / 100;
-const newId = () => Math.max(Date.now(), ...data.accounts.map(a=>a.id+1), ...data.tx.map(t=>t.id+1));
-function refreshAccountOptions() {
-  const accounts = data.accounts.filter(a => !isCrypto(a));
-  for (const id of ['txAccount','txToAccount']) {
-    const el = document.getElementById(id), previous = el.value;
-    el.replaceChildren(new Option(accounts.length ? 'Kies een rekening' : 'Voeg eerst een bank- of spaarrekening toe', ''));
-    accounts.forEach(a => el.add(new Option(a.naam, String(a.id))));
-    if (accounts.some(a => String(a.id) === previous)) el.value = previous;
-  }
-}
-document.getElementById('txSoort').addEventListener('change', () => {
-  const transfer = document.getElementById('txSoort').value === 'transfer';
-  const target = document.getElementById('txToAccount');
-  target.style.display = transfer ? '' : 'none'; target.required = transfer;
-  catSelect.style.display = transfer ? 'none' : '';
-});
-
-// Vul categorie-select
-const catSelect = document.getElementById("cat");
-Object.keys(CATEGORIEEN).forEach(c => catSelect.add(new Option(c, c)));
-
-// Automatische categorisering
-function autoCat(omschr, soort) {
-  if (soort === "transfer") return "Overig";
-  const t = omschr.toLowerCase();
-  for (const [cat, woorden] of Object.entries(CATEGORIEEN)) {
-    if (woorden.some(w => t.includes(w))) return cat;
-  }
-  return "Overig";
-}
-document.getElementById("omschr").addEventListener("input", e => {
-  const soort = document.querySelector('#txForm [name=soort]').value;
-  catSelect.value = autoCat(e.target.value, soort);
-});
-document.getElementById("datum").valueAsDate = new Date();
-document.getElementById("maandFilter").value = new Date().toISOString().slice(0,7);
-
-// Accounts: velden tonen afhankelijk van type
-const accType = document.querySelector('#accForm [name=type]');
-accType.addEventListener("change", () => {
-  const t = accType.value;
-  const crypto = t === "crypto";
-  const wallet = t === "wallet";
-  document.getElementById("accCoin").style.display = crypto ? "" : "none";
-  document.getElementById("accQty").style.display = crypto ? "" : "none";
-  document.getElementById("accAdres").style.display = wallet ? "" : "none";
-  document.getElementById("accSaldo").style.display = (crypto || wallet) ? "none" : "";
-});
-
-document.getElementById("accForm").addEventListener("submit", e => {
-  e.preventDefault();
-  const f = new FormData(e.target);
-  if (f.get("type") === "wallet") {
-    const adres = (f.get("adres") || "").trim();
-    if (!/^0x[a-fA-F0-9]{40}$/.test(adres)) { alert("Ongeldig EVM-adres. Gebruik een adres dat begint met 0x en 40 tekens heeft."); return; }
-    data.accounts.push({ id: Date.now(), naam: f.get("naam"), type: "wallet", adres, coin: "ETH", qty: 0, prijs: 0 });
-    save(); e.target.reset(); accType.dispatchEvent(new Event("change")); render();
-    syncAll(true);
-    return;
-  }
-  const acc = { id: Date.now(), naam: f.get("naam"), type: f.get("type") };
-  if (acc.type === "crypto") {
-    acc.coin = (f.get("coin")||"").toUpperCase();
-    acc.qty = parseFloat(f.get("hoeveelheid")) || 0;
-    acc.prijs = COINGECKO_IDS[acc.coin] ? 0 : (parseFloat(prompt(`Huidige prijs van 1 ${acc.coin} in €?`)) || 0);
-  } else {
-    acc.saldo = parseFloat(f.get("saldo")) || 0;
-  }
-  data.accounts.push(acc); save(); e.target.reset(); accType.dispatchEvent(new Event("change")); render();
-  if (COINGECKO_IDS[acc.coin]) syncAll(true);
-});
-
-function accWaarde(a) { return isCrypto(a) ? a.qty * a.prijs : a.saldo; }
-
-function renderAccounts() {
-  refreshAccountOptions();
-  const tb = document.getElementById("accList");
-  const visibleAccounts = data.accounts.filter(a => currentPage === 'wallets' ? isCrypto(a) : currentPage === 'rekeningen' ? !isCrypto(a) : true);
-  tb.innerHTML = visibleAccounts.map(a => `
-    <tr>
-      <td>${esc(a.naam)}</td>
-      <td><span class="tag">${esc(a.type)}${a.coin ? " · "+esc(a.coin) : ""}${a.type==="wallet" ? " · "+a.adres.slice(0,6)+"…"+a.adres.slice(-4) : ""}</span></td>
-      <td>${eur(accWaarde(a))}${isCrypto(a) ? `<div class="note">${a.qty} × ${eur(a.prijs)}${COINGECKO_IDS[a.coin] ? " (auto)" : ""}</div>` : ""}</td>
-      <td class="row-actions">
-        ${a.type==="wallet" ? "" : `<button class="secondary" onclick="updateAcc(${a.id})">Bijwerken</button>`}
-        <button class="danger" onclick="delAcc(${a.id})">×</button>
-      </td>
-    </tr>`).join("") || `<tr><td colspan="4" class="note">Nog geen rekeningen toegevoegd.</td></tr>`;
-}
-
-function updateAcc(id) {
-  const a = data.accounts.find(x => x.id === id);
-  if (isCrypto(a)) {
-    const q = prompt(`Nieuwe hoeveelheid ${a.coin}?`, a.qty);
-    if (q !== null) a.qty = parseFloat(q) || 0;
-    if (!COINGECKO_IDS[a.coin]) {
-      const p = prompt(`Nieuwe prijs per ${a.coin} in €?`, a.prijs);
-      if (p !== null) a.prijs = parseFloat(p) || 0;
-    }
-  } else {
-    const s = prompt("Nieuw saldo in €?", a.saldo);
-    if (s !== null) a.saldo = parseFloat(s) || 0;
-  }
-  save(); render();
-}
-function delAcc(id) {
-  if (data.tx.some(t => t.accountId === id || t.toAccountId === id)) {
-    alert('Deze rekening heeft gekoppelde transacties. Verwijder die eerst (dat draait hun saldo-effect terug), of bewaar de rekening voor je historie.'); return;
-  }
-  if (confirm("Rekening verwijderen?")) { data.accounts = data.accounts.filter(a => a.id !== id); save(); render(); }
-}
-
-// Automatische synchronisatie: koersen (CoinGecko) + ETH-saldo van wallets (publieke RPC)
-function setStatus(t) { document.getElementById("status").textContent = t; }
-
-async function syncAll(manual) {
-  const cryptos = data.accounts.filter(isCrypto);
-  if (!cryptos.length) { setStatus("Geen crypto-posities om te synchroniseren."); return; }
-  setStatus("Synchroniseren…");
-  try {
-    const ids = [...new Set(cryptos.map(a => COINGECKO_IDS[a.coin]).filter(Boolean))];
-    if (ids.length) {
-      const r = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${ids.join(",")}&vs_currencies=eur`);
-      if (!r.ok) throw new Error("CoinGecko HTTP " + r.status);
-      const p = await r.json();
-      cryptos.forEach(a => { const id = COINGECKO_IDS[a.coin]; if (id && p[id]) a.prijs = p[id].eur; });
-    }
-    for (const a of data.accounts.filter(x => x.type === "wallet")) {
-      const r = await fetch(ETH_RPC, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "eth_getBalance", params: [a.adres, "latest"] })
-      });
-      if (!r.ok) throw new Error("RPC HTTP " + r.status);
-      const j = await r.json();
-      if (!j.result) throw new Error("Geen saldo ontvangen");
-      a.qty = Number(BigInt(j.result)) / 1e18;
-    }
-    save(); render();
-    setStatus("Laatst gesynchroniseerd: " + new Date().toLocaleTimeString("nl-NL"));
-  } catch (err) {
-    setStatus("Sync mislukt: " + err.message + (manual ? "" : " (volgende poging over 5 min)"));
-  }
-}
-
-// Transacties
-document.getElementById("txForm").addEventListener("submit", e => {
-  e.preventDefault();
-  const f = new FormData(e.target), amount = money(Number(f.get('bedrag')));
-  const account = data.accounts.find(a => a.id === Number(f.get('accountId')) && !isCrypto(a));
-  const transfer = f.get('soort') === 'transfer';
-  const target = transfer ? data.accounts.find(a => a.id === Number(f.get('toAccountId')) && !isCrypto(a)) : null;
-  if (!account || !Number.isFinite(amount) || amount <= 0) { alert('Kies een rekening en een geldig positief bedrag.'); return; }
-  if (transfer && (!target || target.id === account.id)) { alert('Kies twee verschillende rekeningen.'); return; }
-  account.saldo = money(account.saldo + (f.get('soort') === 'in' ? amount : -amount));
-  if (target) target.saldo = money(target.saldo + amount);
-  data.tx.push({
-    id: newId(), soort: f.get('soort'), bedrag: amount,
-    omschrijving: f.get('omschrijving'), datum: f.get('datum'),
-    categorie: transfer ? 'Overboeking' : f.get('categorie'),
-    accountId: account.id, ...(target ? {toAccountId: target.id} : {})
-  });
-  save(); e.target.reset(); document.getElementById('txSoort').dispatchEvent(new Event('change'));
-  document.getElementById('datum').valueAsDate = new Date(); render();
-});
-function delTx(id) {
-  const t = data.tx.find(t=>t.id === id);
-  if (!t || !confirm('Transactie verwijderen? Het saldo-effect van een gekoppelde transactie wordt teruggedraaid.')) return;
-  const account = data.accounts.find(a=>a.id === t.accountId);
-  const target = data.accounts.find(a=>a.id === t.toAccountId);
-  if (account) account.saldo = money(account.saldo + (t.soort === 'in' ? -t.bedrag : t.bedrag));
-  if (target && t.soort === 'transfer') target.saldo = money(target.saldo - t.bedrag);
-  data.tx = data.tx.filter(t=>t.id !== id); save(); render();
-}
-document.getElementById("maandFilter").addEventListener("change", render);
-
-function renderTx() {
-  const m = document.getElementById("maandFilter").value;
-  const lijst = data.tx.filter(t => !m || t.datum.startsWith(m)).sort((a,b)=>b.datum.localeCompare(a.datum));
-  document.getElementById("txList").innerHTML = lijst.map(t => `
-    <tr>
-      <td>${t.datum}</td>
-      <td>${esc(t.omschrijving)}<div class="note">${esc(data.accounts.find(a=>a.id===t.accountId)?.naam || 'Niet gekoppeld (bestaande transactie)')}${t.soort==='transfer' ? ' → '+esc(data.accounts.find(a=>a.id===t.toAccountId)?.naam || 'Onbekend') : ''}</div></td>
-      <td><span class="tag">${esc(t.categorie)}</span></td>
-      <td class="${t.soort==='transfer'?'':t.soort==='in'?'pos':'neg'}">${t.soort==='transfer'?'↔ ':t.soort==='in'?'+':'−'}${eur(t.bedrag)}</td>
-      <td class="row-actions"><button class="danger" onclick="delTx(${t.id})">×</button></td>
-    </tr>`).join("") || `<tr><td colspan="5" class="note">Geen transacties in deze periode.</td></tr>`;
-  return lijst;
-}
-
-function renderMainAccounts() {
-  const groups = [
-    {id:'overviewBankAccounts', accounts:data.accounts.filter(a => a.type === 'bank'), empty:'Nog geen zicht- of betaalrekeningen. Voeg bijvoorbeeld je ING-rekening toe via Rekeningen beheren.'},
-    {id:'overviewSavingsAccounts', accounts:data.accounts.filter(a => a.type === 'spaar'), empty:'Nog geen spaarrekeningen toegevoegd.'},
-    {id:'overviewWalletAccounts', accounts:data.accounts.filter(isCrypto), empty:'Nog geen wallets of crypto-posities toegevoegd.'}
-  ];
-  for (const group of groups) {
-    const container = document.getElementById(group.id);
-    container.replaceChildren();
-    const accounts = [...group.accounts].sort((a,b) => a.naam.localeCompare(b.naam, 'nl', {sensitivity:'base', numeric:true}));
-    if (!accounts.length) {
-      const empty = document.createElement('p'); empty.className = 'note'; empty.textContent = group.empty;
-      container.append(empty);
-    }
-    for (const account of accounts) {
-      const row = document.createElement('div'); row.className = 'overview-account';
-      const info = document.createElement('div'); info.className = 'overview-account-info';
-      const name = document.createElement('strong'); name.className = 'overview-account-name'; name.textContent = account.naam;
-      const note = document.createElement('div'); note.className = 'note';
-      if (!isCrypto(account)) note.textContent = account.type === 'spaar' ? 'Spaarrekening' : 'Zicht- / betaalrekening';
-      else {
-        note.textContent = `${account.qty} ${account.coin} · indicatieve waarde`;
-        if (account.type === 'wallet') note.textContent += ` · Ethereum: ${account.adres.slice(0,6)}…${account.adres.slice(-4)} · alleen ETH, geen tokens`;
-        if (!account.prijs) note.textContent += ' · nog geen koers beschikbaar';
-      }
-      const value = document.createElement('div'); value.className = 'overview-account-value';
-      value.textContent = isCrypto(account) && !account.prijs ? 'Koers ontbreekt' : eur(accWaarde(account));
-      info.append(name, note); row.append(info, value); container.append(row);
-    }
-  }
-  const showWallets = data.preferences?.showWalletsOnOverview !== false;
-  document.getElementById('showWalletsOnOverview').checked = showWallets;
-  document.getElementById('overviewWalletSection').hidden = !showWallets;
-}
-document.getElementById('showWalletsOnOverview').addEventListener('change', e => {
-  data.preferences = {...data.preferences, showWalletsOnOverview:e.target.checked};
-  save(); renderMainAccounts();
-});
-
-function renderTotals() {
-  const m = document.getElementById("maandFilter").value;
-  const maand = data.tx.filter(t => t.datum.startsWith(m));
-  const inK = maand.filter(t=>t.soort==="in").reduce((s,t)=>s+t.bedrag,0);
-  const uitK = maand.filter(t=>t.soort==="uit").reduce((s,t)=>s+t.bedrag,0);
-  document.getElementById("inkMaand").textContent = eur(inK);
-  document.getElementById("uitMaand").textContent = eur(uitK);
-  const saldoEl = document.getElementById("saldoMaand");
-  saldoEl.textContent = eur(inK-uitK);
-  saldoEl.className = "big " + (inK-uitK>=0?"pos":"neg");
-
-  const totaal = data.accounts.reduce((s,a)=>s+accWaarde(a),0);
-  document.getElementById("totaal").textContent = eur(totaal);
-
-  const perCat = {};
-  maand.filter(t=>t.soort==="uit").forEach(t => perCat[t.categorie]=(perCat[t.categorie]||0)+t.bedrag);
-  document.getElementById("catSum").innerHTML = Object.entries(perCat).sort((a,b)=>b[1]-a[1])
-    .map(([c,v]) => `<tr><td>${esc(c)}</td><td style="text-align:right">${eur(v)}</td></tr>`).join("")
-    || `<tr><td class="note">Geen uitgaven deze maand.</td></tr>`;
-}
-
-function exportCSV() {
-  const lijst = renderTx();
-  const rows = [["datum","omschrijving","categorie","soort","bedrag"], ...lijst.map(t=>[t.datum,t.omschrijving,t.categorie,t.soort,t.bedrag])];
-  const csv = rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(";")).join("\n");
-  const url = URL.createObjectURL(new Blob([csv],{type:"text/csv"}));
-  const a = Object.assign(document.createElement("a"), {href:url, download:"transacties.csv"});
-  a.click();
-}
-
-function downloadJSON(object, name) {
-  const url = URL.createObjectURL(new Blob([JSON.stringify(object,null,2)], {type:'application/json'}));
-  const link = Object.assign(document.createElement('a'), {href:url, download:name});
-  link.click(); setTimeout(()=>URL.revokeObjectURL(url),1000);
-}
-function exportBackup() {
-  downloadJSON({version:3, exportedAt:new Date().toISOString(), data}, 'dashboard-backup-'+new Date().toISOString().slice(0,10)+'.json');
-}
-function validBackup(d) {
-  if (!d || !Array.isArray(d.accounts) || !Array.isArray(d.tx)) return false;
-  const ids = new Set();
-  for (const a of d.accounts) {
-    if (!a || !Number.isSafeInteger(a.id) || a.id<0 || ids.has(a.id) || typeof a.naam!=='string' || !['bank','spaar','crypto','wallet'].includes(a.type)) return false;
-    ids.add(a.id);
-    if (isCrypto(a)) {
-      if (typeof a.coin!=='string' || !Number.isFinite(a.qty) || a.qty<0 || !Number.isFinite(a.prijs) || a.prijs<0) return false;
-      if (a.type==='wallet' && !/^0x[a-fA-F0-9]{40}$/.test(a.adres)) return false;
-    } else if (!Number.isFinite(a.saldo)) return false;
-  }
-  const txIds = new Set();
-  for (const t of d.tx) {
-    if (!t || !Number.isSafeInteger(t.id) || t.id<0 || txIds.has(t.id) || !['in','uit','transfer'].includes(t.soort) || !Number.isFinite(t.bedrag) || t.bedrag<=0 || typeof t.omschrijving!=='string' || typeof t.categorie!=='string' || typeof t.datum!=='string' || !/^\d{4}-\d{2}-\d{2}$/.test(t.datum) || !Number.isFinite(Date.parse(t.datum))) return false;
-    txIds.add(t.id);
-    const linked = d.accounts.find(a=>a.id===t.accountId && !isCrypto(a));
-    if (t.accountId!==undefined && !linked) return false;
-    if (t.soort==='transfer' && (!linked || t.toAccountId===t.accountId || !d.accounts.some(a=>a.id===t.toAccountId && !isCrypto(a)))) return false;
-    if (t.soort!=='transfer' && t.toAccountId!==undefined) return false;
-  }
-  return true;
-}
-document.getElementById('backupFile').addEventListener('change', async e => {
-  const file = e.target.files[0]; if (!file) return;
-  try {
-    if (file.size>10*1024*1024) throw new Error('Bestand is groter dan 10 MB.');
-    const parsed = JSON.parse(await file.text());
-    const restored = parsed.data || parsed;
-    if (!validBackup(restored)) throw new Error('Dit is geen geldige dashboard-back-up.');
-    if (!confirm('Alle huidige gegevens vervangen? Download eerst een back-up als je die wilt bewaren.')) return;
-    if (!storageKey) throw new Error('Log eerst in.');
-    localStorage.setItem(storageKey, JSON.stringify(restored));
-    data = restored; render(); setStatus('Back-up hersteld. Saldi zijn overgenomen, niet opnieuw berekend.');
-  } catch(err) { alert('Herstellen mislukt: '+err.message); }
-  finally { e.target.value=''; }
-});
-function render() {
-  applyTheme();
-  if (currentPage === 'rekeningen' || currentPage === 'wallets') {
-    const allowed = currentPage === 'wallets' ? ['wallet','crypto'] : ['bank','spaar'];
-    if (!allowed.includes(accType.value)) accType.value = allowed[0];
-    accType.dispatchEvent(new Event('change'));
-  }
-  renderAccounts(); renderTx(); renderTotals(); renderMainAccounts();
-}
-render();
-
+const CATEGORIEEN={"Boodschappen":["albert heijn","jumbo","lidl","aldi","picnic","plus"],"Wonen":["huur","hypotheek","energie","vattenfall","eneco","water","gemeente"],"Vervoer":["ns","shell","esso","tankstation","uber","ov","parkeer"],"Abonnementen":["netflix","spotify","disney","icloud","google one","adobe"],"Horeca & uit":["restaurant","cafe","café","bar","mcdonald","thuisbezorgd","uber eats"],"Zorg":["apotheek","tandarts","huisarts","zorg"],"Salaris":["salaris","loon"],"Overig":[]};
+const COINGECKO_IDS={BTC:"bitcoin",ETH:"ethereum",SOL:"solana",BNB:"binancecoin"};const ETH_RPC="https://ethereum-rpc.publicnode.com";const SYNC_MS=5*60*1000;
+let currentPage='overzicht';const pageTitles={overzicht:'Overzicht',rekeningen:'Rekeningen',wallets:'Wallets & crypto',transacties:'Uitgaven & inkomsten',instellingen:'Instellingen & back-up',documentatie:'Documentatie'};const menuToggle=document.getElementById('menuToggle');const dashboardMenu=document.getElementById('dashboardMenu');
+function closeMenu(returnFocus=false){dashboardMenu.hidden=true;menuToggle.setAttribute('aria-expanded','false');menuToggle.setAttribute('aria-label','Navigatie openen');if(returnFocus)menuToggle.focus();}
+menuToggle.addEventListener('click',()=>{const open=dashboardMenu.hidden;dashboardMenu.hidden=!open;menuToggle.setAttribute('aria-expanded',String(open));menuToggle.setAttribute('aria-label',open?'Navigatie sluiten':'Navigatie openen');});document.addEventListener('click',e=>{if(!e.target.closest('.navigation'))closeMenu();});document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!dashboardMenu.hidden)closeMenu(true);});
+function showPage(page){if(!pageTitles[page])return;currentPage=page;document.querySelectorAll('[data-page]').forEach(el=>{el.hidden=!el.dataset.page.split(' ').includes(page);});const heading=document.getElementById('pageHeading');heading.textContent=pageTitles[page];document.querySelectorAll('[data-nav]').forEach(button=>{if(button.dataset.nav===page)button.setAttribute('aria-current','page');else button.removeAttribute('aria-current');});if(page==='rekeningen'||page==='wallets'){const wallet=page==='wallets';document.getElementById('accountsHeading').textContent=pageTitles[page];[...accType.options].forEach(option=>{const cryptoType=['crypto','wallet'].includes(option.value);option.disabled=cryptoType!==wallet;option.hidden=option.disabled;});if(accType.selectedOptions[0].disabled)accType.value=wallet?'wallet':'bank';accType.dispatchEvent(new Event('change'));document.querySelectorAll('[data-wallet-only]').forEach(el=>{el.hidden=!wallet;});document.getElementById('status').hidden=!wallet;renderAccounts();}closeMenu();heading.focus();}
+dashboardMenu.addEventListener('click',e=>{const button=e.target.closest('[data-nav]');if(button)showPage(button.dataset.nav);});
+let storageKey=null;let data={accounts:[],tx:[]};const save=()=>{if(storageKey)localStorage.setItem(storageKey,JSON.stringify(data));};const systemTheme=window.matchMedia('(prefers-color-scheme: dark)');
+function applyTheme(){const preference=['light','dark','system'].includes(data.preferences?.theme)?data.preferences.theme:'light';const theme=preference==='system'?(systemTheme.matches?'dark':'light'):preference;document.documentElement.dataset.theme=theme;document.body.dataset.theme=theme;document.getElementById('themePreference').value=preference;}
+document.getElementById('themePreference').addEventListener('change',e=>{data.preferences={...data.preferences,theme:e.target.value};save();applyTheme();});systemTheme.addEventListener('change',applyTheme);applyTheme();const eur=n=>new Intl.NumberFormat('nl-NL',{style:'currency',currency:'EUR'}).format(n);const isCrypto=a=>a.type==='crypto'||a.type==='wallet';const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));const money=n=>Math.round((n+Number.EPSILON)*100)/100;const newId=()=>Math.max(Date.now(),...data.accounts.map(a=>a.id+1),...data.tx.map(t=>t.id+1));
+function refreshAccountOptions(){const accounts=data.accounts.filter(a=>!isCrypto(a));for(const id of ['txAccount','txToAccount']){const el=document.getElementById(id),previous=el.value;el.replaceChildren(new Option(accounts.length?'Kies een rekening':'Voeg eerst een bank- of spaarrekening toe',''));accounts.forEach(a=>el.add(new Option(a.naam,String(a.id))));if(accounts.some(a=>String(a.id)===previous))el.value=previous;}}
+document.getElementById('txSoort').addEventListener('change',()=>{const transfer=document.getElementById('txSoort').value==='transfer';const target=document.getElementById('txToAccount');target.style.display=transfer?'':'none';target.required=transfer;catSelect.style.display=transfer?'none':'';});const catSelect=document.getElementById('cat');Object.keys(CATEGORIEEN).forEach(c=>catSelect.add(new Option(c,c)));
+function autoCat(omschr,soort){if(soort==='transfer')return 'Overig';const t=omschr.toLowerCase();for(const [cat,woorden]of Object.entries(CATEGORIEEN)){if(woorden.some(w=>t.includes(w)))return cat;}return 'Overig';}
+document.getElementById('omschr').addEventListener('input',e=>{const soort=document.querySelector('#txForm [name=soort]').value;catSelect.value=autoCat(e.target.value,soort);});document.getElementById('datum').valueAsDate=new Date();document.getElementById('maandFilter').value=new Date().toISOString().slice(0,7);const accType=document.querySelector('#accForm [name=type]');accType.addEventListener('change',()=>{const t=accType.value;const crypto=t==='crypto',wallet=t==='wallet';document.getElementById('accCoin').style.display=crypto?'':'none';document.getElementById('accQty').style.display=crypto?'':'none';document.getElementById('accAdres').style.display=wallet?'':'none';document.getElementById('accSaldo').style.display=(crypto||wallet)?'none':'';});
+document.getElementById('accForm').addEventListener('submit',e=>{e.preventDefault();const f=new FormData(e.target);if(f.get('type')==='wallet'){const adres=(f.get('adres')||'').trim();if(!/^0x[a-fA-F0-9]{40}$/.test(adres)){alert('Ongeldig EVM-adres. Gebruik een adres dat begint met 0x en 40 tekens heeft.');return;}data.accounts.push({id:Date.now(),naam:f.get('naam'),type:'wallet',adres,coin:'ETH',qty:0,prijs:0});save();e.target.reset();accType.dispatchEvent(new Event('change'));render();syncAll(true);return;}const acc={id:Date.now(),naam:f.get('naam'),type:f.get('type')};if(acc.type==='crypto'){acc.coin=(f.get('coin')||'').toUpperCase();acc.qty=parseFloat(f.get('hoeveelheid'))||0;acc.prijs=COINGECKO_IDS[acc.coin]?0:(parseFloat(prompt(`Huidige prijs van 1 ${acc.coin} in €?`))||0);}else{acc.saldo=parseFloat(f.get('saldo'))||0;}data.accounts.push(acc);save();e.target.reset();accType.dispatchEvent(new Event('change'));render();if(COINGECKO_IDS[acc.coin])syncAll(true);});
+function accWaarde(a){return isCrypto(a)?a.qty*a.prijs:a.saldo;}
+function renderAccounts(){refreshAccountOptions();const tb=document.getElementById('accList');const visibleAccounts=data.accounts.filter(a=>currentPage==='wallets'?isCrypto(a):currentPage==='rekeningen'?!isCrypto(a):true);tb.innerHTML=visibleAccounts.map(a=>`<tr><td>${esc(a.naam)}</td><td><span class="tag">${esc(a.type)}${a.coin?' · '+esc(a.coin):''}${a.type==='wallet'?' · '+a.adres.slice(0,6)+'…'+a.adres.slice(-4):''}</span></td><td>${eur(accWaarde(a))}${isCrypto(a)?`<div class="note">${a.qty} × ${eur(a.prijs)}${COINGECKO_IDS[a.coin]?' (auto)':''}</div>`:''}</td><td class="row-actions">${a.type==='wallet'?'':`<button class="secondary" onclick="updateAcc(${a.id})">Bijwerken</button>`}<button class="danger" onclick="delAcc(${a.id})">×</button></td></tr>`).join('')||'<tr><td colspan="4" class="note">Nog geen rekeningen toegevoegd.</td></tr>';}
+function updateAcc(id){const a=data.accounts.find(x=>x.id===id);if(isCrypto(a)){const q=prompt(`Nieuwe hoeveelheid ${a.coin}?`,a.qty);if(q!==null)a.qty=parseFloat(q)||0;if(!COINGECKO_IDS[a.coin]){const p=prompt(`Nieuwe prijs per ${a.coin} in €?`,a.prijs);if(p!==null)a.prijs=parseFloat(p)||0;}}else{const s=prompt('Nieuw saldo in €?',a.saldo);if(s!==null)a.saldo=parseFloat(s)||0;}save();render();}
+function delAcc(id){if(data.tx.some(t=>t.accountId===id||t.toAccountId===id)){alert('Deze rekening heeft gekoppelde transacties. Verwijder die eerst (dat draait hun saldo-effect terug), of bewaar de rekening voor je historie.');return;}if(confirm('Rekening verwijderen?')){data.accounts=data.accounts.filter(a=>a.id!==id);save();render();}}
+function setStatus(t){document.getElementById('status').textContent=t;}
+async function syncAll(manual){const cryptos=data.accounts.filter(isCrypto);if(!cryptos.length){setStatus('Geen crypto-posities om te synchroniseren.');return;}setStatus('Synchroniseren…');try{const ids=[...new Set(cryptos.map(a=>COINGECKO_IDS[a.coin]).filter(Boolean))];if(ids.length){const r=await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${ids.join(',')}&vs_currencies=eur`);if(!r.ok)throw new Error('CoinGecko HTTP '+r.status);const p=await r.json();cryptos.forEach(a=>{const id=COINGECKO_IDS[a.coin];if(id&&p[id])a.prijs=p[id].eur;});}for(const a of data.accounts.filter(x=>x.type==='wallet')){const r=await fetch(ETH_RPC,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({jsonrpc:'2.0',id:1,method:'eth_getBalance',params:[a.adres,'latest']})});if(!r.ok)throw new Error('RPC HTTP '+r.status);const j=await r.json();if(!j.result)throw new Error('Geen saldo ontvangen');a.qty=Number(BigInt(j.result))/1e18;}save();render();setStatus('Laatst gesynchroniseerd: '+new Date().toLocaleTimeString('nl-NL'));}catch(err){setStatus('Sync mislukt: '+err.message+(manual?'':' (volgende poging over 5 min)'));}}
+document.getElementById('txForm').addEventListener('submit',e=>{e.preventDefault();const f=new FormData(e.target),amount=money(Number(f.get('bedrag')));const account=data.accounts.find(a=>a.id===Number(f.get('accountId'))&&!isCrypto(a));const transfer=f.get('soort')==='transfer';const target=transfer?data.accounts.find(a=>a.id===Number(f.get('toAccountId'))&&!isCrypto(a)):null;if(!account||!Number.isFinite(amount)||amount<=0){alert('Kies een rekening en een geldig positief bedrag.');return;}if(transfer&&(!target||target.id===account.id)){alert('Kies twee verschillende rekeningen.');return;}account.saldo=money(account.saldo+(f.get('soort')==='in'?amount:-amount));if(target)target.saldo=money(target.saldo+amount);data.tx.push({id:newId(),soort:f.get('soort'),bedrag:amount,omschrijving:f.get('omschrijving'),datum:f.get('datum'),categorie:transfer?'Overboeking':f.get('categorie'),accountId:account.id,...(target?{toAccountId:target.id}:{})});save();e.target.reset();document.getElementById('txSoort').dispatchEvent(new Event('change'));document.getElementById('datum').valueAsDate=new Date();render();});
+function delTx(id){const t=data.tx.find(t=>t.id===id);if(!t||!confirm('Transactie verwijderen? Het saldo-effect van een gekoppelde transactie wordt teruggedraaid.'))return;const account=data.accounts.find(a=>a.id===t.accountId);const target=data.accounts.find(a=>a.id===t.toAccountId);if(account)account.saldo=money(account.saldo+(t.soort==='in'?-t.bedrag:t.bedrag));if(target&&t.soort==='transfer')target.saldo=money(target.saldo-t.bedrag);data.tx=data.tx.filter(t=>t.id!==id);save();render();}document.getElementById('maandFilter').addEventListener('change',render);
+function renderTx(){const m=document.getElementById('maandFilter').value;const lijst=data.tx.filter(t=>!m||t.datum.startsWith(m)).sort((a,b)=>b.datum.localeCompare(a.datum));document.getElementById('txList').innerHTML=lijst.map(t=>`<tr><td>${t.datum}</td><td>${esc(t.omschrijving)}<div class="note">${esc(data.accounts.find(a=>a.id===t.accountId)?.naam||'Niet gekoppeld (bestaande transactie)')}${t.soort==='transfer'?' → '+esc(data.accounts.find(a=>a.id===t.toAccountId)?.naam||'Onbekend'):''}</div></td><td><span class="tag">${esc(t.categorie)}</span></td><td class="${t.soort==='transfer'?'':t.soort==='in'?'pos':'neg'}">${t.soort==='transfer'?'↔ ':t.soort==='in'?'+':'−'}${eur(t.bedrag)}</td><td class="row-actions"><button class="danger" onclick="delTx(${t.id})">×</button></td></tr>`).join('')||'<tr><td colspan="5" class="note">Geen transacties in deze periode.</td></tr>';return lijst;}
+function renderMainAccounts(){const groups=[{id:'overviewBankAccounts',accounts:data.accounts.filter(a=>a.type==='bank'),empty:'Nog geen zicht- of betaalrekeningen. Voeg bijvoorbeeld je ING-rekening toe via Rekeningen beheren.'},{id:'overviewSavingsAccounts',accounts:data.accounts.filter(a=>a.type==='spaar'),empty:'Nog geen spaarrekeningen toegevoegd.'},{id:'overviewWalletAccounts',accounts:data.accounts.filter(isCrypto),empty:'Nog geen wallets of crypto-posities toegevoegd.'}];for(const group of groups){const container=document.getElementById(group.id);container.replaceChildren();const accounts=[...group.accounts].sort((a,b)=>a.naam.localeCompare(b.naam,'nl',{sensitivity:'base',numeric:true}));if(!accounts.length){const empty=document.createElement('p');empty.className='note';empty.textContent=group.empty;container.append(empty);}for(const account of accounts){const row=document.createElement('div');row.className='overview-account';const info=document.createElement('div');info.className='overview-account-info';const name=document.createElement('strong');name.className='overview-account-name';name.textContent=account.naam;const note=document.createElement('div');note.className='note';if(!isCrypto(account))note.textContent=account.type==='spaar'?'Spaarrekening':'Zicht- / betaalrekening';else{note.textContent=`${account.qty} ${account.coin} · indicatieve waarde`;if(account.type==='wallet')note.textContent+=` · Ethereum: ${account.adres.slice(0,6)}…${account.adres.slice(-4)} · alleen ETH, geen tokens`;if(!account.prijs)note.textContent+=' · nog geen koers beschikbaar';}const value=document.createElement('div');value.className='overview-account-value';value.textContent=isCrypto(account)&&!account.prijs?'Koers ontbreekt':eur(accWaarde(account));info.append(name,note);row.append(info,value);container.append(row);}}const showWallets=data.preferences?.showWalletsOnOverview!==false;document.getElementById('showWalletsOnOverview').checked=showWallets;document.getElementById('overviewWalletSection').hidden=!showWallets;}
+document.getElementById('showWalletsOnOverview').addEventListener('change',e=>{data.preferences={...data.preferences,showWalletsOnOverview:e.target.checked};save();renderMainAccounts();});
+function renderTotals(){const m=document.getElementById('maandFilter').value;const maand=data.tx.filter(t=>t.datum.startsWith(m));const inK=maand.filter(t=>t.soort==='in').reduce((s,t)=>s+t.bedrag,0);const uitK=maand.filter(t=>t.soort==='uit').reduce((s,t)=>s+t.bedrag,0);document.getElementById('inkMaand').textContent=eur(inK);document.getElementById('uitMaand').textContent=eur(uitK);const saldoEl=document.getElementById('saldoMaand');saldoEl.textContent=eur(inK-uitK);saldoEl.className='big '+(inK-uitK>=0?'pos':'neg');const totaal=data.accounts.reduce((s,a)=>s+accWaarde(a),0);document.getElementById('totaal').textContent=eur(totaal);const perCat={};maand.filter(t=>t.soort==='uit').forEach(t=>perCat[t.categorie]=(perCat[t.categorie]||0)+t.bedrag);document.getElementById('catSum').innerHTML=Object.entries(perCat).sort((a,b)=>b[1]-a[1]).map(([c,v])=>`<tr><td>${esc(c)}</td><td style="text-align:right">${eur(v)}</td></tr>`).join('')||'<tr><td class="note">Geen uitgaven deze maand.</td></tr>';}
+function exportCSV(){const lijst=renderTx();const rows=[['datum','omschrijving','categorie','soort','bedrag'],...lijst.map(t=>[t.datum,t.omschrijving,t.categorie,t.soort,t.bedrag])];const csv=rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(';')).join('\n');const url=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));const a=Object.assign(document.createElement('a'),{href:url,download:'transacties.csv'});a.click();}
+function downloadJSON(object,name){const url=URL.createObjectURL(new Blob([JSON.stringify(object,null,2)],{type:'application/json'}));const link=Object.assign(document.createElement('a'),{href:url,download:name});link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
+function exportBackup(){downloadJSON({version:3,exportedAt:new Date().toISOString(),data},'dashboard-backup-'+new Date().toISOString().slice(0,10)+'.json');}
+function validBackup(d){if(!d||!Array.isArray(d.accounts)||!Array.isArray(d.tx))return false;const ids=new Set();for(const a of d.accounts){if(!a||!Number.isSafeInteger(a.id)||a.id<0||ids.has(a.id)||typeof a.naam!=='string'||!['bank','spaar','crypto','wallet'].includes(a.type))return false;ids.add(a.id);if(isCrypto(a)){if(typeof a.coin!=='string'||!Number.isFinite(a.qty)||a.qty<0||!Number.isFinite(a.prijs)||a.prijs<0)return false;if(a.type==='wallet'&&!/^0x[a-fA-F0-9]{40}$/.test(a.adres))return false;}else if(!Number.isFinite(a.saldo))return false;}const txIds=new Set();for(const t of d.tx){if(!t||!Number.isSafeInteger(t.id)||t.id<0||txIds.has(t.id)||!['in','uit','transfer'].includes(t.soort)||!Number.isFinite(t.bedrag)||t.bedrag<=0||typeof t.omschrijving!=='string'||typeof t.categorie!=='string'||typeof t.datum!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(t.datum)||!Number.isFinite(Date.parse(t.datum)))return false;txIds.add(t.id);const linked=d.accounts.find(a=>a.id===t.accountId&&!isCrypto(a));if(t.accountId!==undefined&&!linked)return false;if(t.soort==='transfer'&&(!linked||t.toAccountId===t.accountId||!d.accounts.some(a=>a.id===t.toAccountId&&!isCrypto(a))))return false;if(t.soort!=='transfer'&&t.toAccountId!==undefined)return false;}return true;}
+document.getElementById('backupFile').addEventListener('change',async e=>{const file=e.target.files[0];if(!file)return;try{if(file.size>10*1024*1024)throw new Error('Bestand is groter dan 10 MB.');const parsed=JSON.parse(await file.text());const restored=parsed.data||parsed;if(!validBackup(restored))throw new Error('Dit is geen geldige dashboard-back-up.');if(!confirm('Alle huidige gegevens vervangen? Download eerst een back-up als je die wilt bewaren.'))return;if(!storageKey)throw new Error('Log eerst in.');localStorage.setItem(storageKey,JSON.stringify(restored));data=restored;render();setStatus('Back-up hersteld. Saldi zijn overgenomen, niet opnieuw berekend.');}catch(err){alert('Herstellen mislukt: '+err.message);}finally{e.target.value='';}});
+function render(){applyTheme();if(currentPage==='rekeningen'||currentPage==='wallets'){const allowed=currentPage==='wallets'?['wallet','crypto']:['bank','spaar'];if(!allowed.includes(accType.value))accType.value=allowed[0];accType.dispatchEvent(new Event('change'));}renderAccounts();renderTx();renderTotals();renderMainAccounts();}render();
 // Supabase Auth via HTTPS REST; geen externe SDK nodig.
-const SUPABASE_URL = 'https://kawmgixplawbuzxagrdp.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_gEwRETB_aOdqEo4BhfFESg_ZscvGZ60';
-const SESSION_KEY = 'banking.supabase.session';
-let authSession = null;
-let localDemoOpen = false;
-const authScreen = document.getElementById('authScreen');
-const appHeader = document.getElementById('appHeader');
-const appMain = document.getElementById('appMain');
-const authMessage = text => { document.getElementById('authStatus').textContent = text; };
-async function authRequest(path, body, token, method='POST') {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 20000);
-  try {
-    const response = await fetch(SUPABASE_URL+'/auth/v1/'+path, {
-      method, signal:controller.signal,
-      headers:{apikey:SUPABASE_KEY, 'Content-Type':'application/json', ...(token ? {Authorization:'Bearer '+token} : {})},
-      ...(body !== undefined ? {body:JSON.stringify(body)} : {})
-    });
-    const result = await response.json().catch(() => ({}));
-    if (!response.ok) throw new Error(result.msg || result.error_description || result.message || 'Aanmelden mislukt ('+response.status+').');
-    return result;
-  } finally { clearTimeout(timeout); }
-}
-function lockDashboard() {
-  localDemoOpen = false; authSession = null; storageKey = null;
-  sessionStorage.removeItem(SESSION_KEY);
-  data = {accounts:[],tx:[]}; closeMenu();
-  appHeader.hidden = true; appMain.hidden = true; authScreen.hidden = false;
-  render();
-}
-async function enterDashboard(session) {
-  if (!session.access_token || !session.refresh_token) throw new Error('Geen geldige sessie ontvangen.');
-  const user = await authRequest('user', undefined, session.access_token, 'GET');
-  if (!user.email_confirmed_at) throw new Error('Bevestig eerst je e-mailadres.');
-  const profile = user.user_metadata || {};
-  if (!profile.first_name || !profile.last_name || !profile.country) throw new Error('Je profiel is nog niet compleet. Gebruik voorlopig een nieuw e-mailtestaccount via dit registratieformulier.');
-  authSession = {...session, user};
-  storageKey = 'dashboardData:user:'+user.id;
-  try { data = JSON.parse(localStorage.getItem(storageKey) || '{"accounts":[],"tx":[]}'); }
-  catch { data = {accounts:[],tx:[]}; }
-  if (!validBackup(data)) data = {accounts:[],tx:[]};
-  sessionStorage.setItem(SESSION_KEY, JSON.stringify({refresh_token:session.refresh_token}));
-  document.getElementById('sessionLabel').textContent = 'Ingelogd: '+user.email;
-  localDemoOpen = true; authScreen.hidden = true; appHeader.hidden = false; appMain.hidden = false;
-  render(); showPage('overzicht');
-  if (data.accounts.some(isCrypto)) syncAll();
-}
-async function withAuthForm(form, action) {
-  const button = form.querySelector('button[type="submit"]'); button.disabled = true;
-  authMessage('Even wachten…');
-  try { await action(); }
-  catch(err) { authMessage(err.name === 'AbortError' ? 'Verbinding duurt te lang. Probeer opnieuw.' : err.message); }
-  finally { button.disabled = false; }
-}
-document.getElementById('registrationForm').addEventListener('submit', e => {
-  e.preventDefault();
-  withAuthForm(e.target, async () => {
-    const f = new FormData(e.target);
-    if (f.get('password') !== f.get('password_confirm')) throw new Error('De wachtwoorden komen niet overeen.');
-    const first = String(f.get('first_name')).trim(), last = String(f.get('last_name')).trim();
-    if (!first || !last) throw new Error('Vul je voornaam en achternaam in.');
-    const redirect = location.origin + location.pathname;
-    const result = await authRequest('signup?redirect_to='+encodeURIComponent(redirect), {
-      email:String(f.get('email')).trim(), password:f.get('password'),
-      data:{first_name:first, last_name:last, country:f.get('country')}
-    });
-    e.target.reset();
-    if (result.access_token) await enterDashboard(result);
-    else { showAuthMode(false); authMessage('Als registratie mogelijk is, ontvang je een bevestigingsmail. Open de link en log daarna in. Controleer ook je spammap.'); }
-  });
-});
-document.getElementById('loginForm').addEventListener('submit', e => {
-  e.preventDefault();
-  withAuthForm(e.target, async () => {
-    const f = new FormData(e.target);
-    const result = await authRequest('token?grant_type=password', {email:String(f.get('email')).trim(),password:f.get('password')});
-    await enterDashboard(result); e.target.reset();
-  });
-});
-function showAuthMode(register) {
-  document.getElementById('registrationForm').hidden = !register;
-  document.getElementById('loginForm').hidden = register;
-  document.getElementById('authTitle').textContent = register ? 'Maak je account aan' : 'Welkom terug';
-  document.getElementById('showRegistration').setAttribute('aria-pressed', String(register));
-  document.getElementById('showLogin').setAttribute('aria-pressed', String(!register));
-}
-document.getElementById('showRegistration').addEventListener('click', () => showAuthMode(true));
-document.getElementById('showLogin').addEventListener('click', () => showAuthMode(false));
-document.getElementById('closeLocalDemo').addEventListener('click', async () => {
-  const token = authSession?.access_token;
-  lockDashboard(); showAuthMode(false); authMessage('Lokaal uitgelogd.');
-  document.getElementById('loginEmail').focus();
-  if (token) {
-    try { await authRequest('logout', undefined, token); }
-    catch { authMessage('Lokaal uitgelogd; server kon niet worden bereikt. Andere sessies zijn mogelijk nog actief.'); }
-  }
-});
-async function restoreSession() {
-  try {
-    const fragment = new URLSearchParams(location.hash.slice(1));
-    if (fragment.has('access_token') || fragment.has('error_description')) {
-      history.replaceState(null,'',location.pathname+location.search);
-      if (fragment.has('error_description')) throw new Error(fragment.get('error_description'));
-      await enterDashboard({access_token:fragment.get('access_token'),refresh_token:fragment.get('refresh_token')});
-      return;
-    }
-    const stored = JSON.parse(sessionStorage.getItem(SESSION_KEY) || 'null');
-    if (stored?.refresh_token) {
-      authMessage('Sessie controleren…');
-      await enterDashboard(await authRequest('token?grant_type=refresh_token', {refresh_token:stored.refresh_token}));
-    }
-  } catch(err) { lockDashboard(); showAuthMode(false); authMessage('Meld je opnieuw aan: '+err.message); }
-}
-restoreSession();
-// Sessies opnieuw valideren en vernieuwen; synchronisatie alleen na inloggen.
-setInterval(async () => {
-  if (!localDemoOpen || !authSession) return;
-  try {
-    const session = await authRequest('token?grant_type=refresh_token', {refresh_token:authSession.refresh_token});
-    if (!localDemoOpen) return;
-    authSession = session;
-    sessionStorage.setItem(SESSION_KEY,JSON.stringify({refresh_token:session.refresh_token}));
-    syncAll();
-  } catch { lockDashboard(); showAuthMode(false); authMessage('Sessie niet meer bevestigd. Log opnieuw in.'); }
-}, SYNC_MS);
+const SUPABASE_URL='https://kawmgixplawbuzxagrdp.supabase.co';const SUPABASE_KEY='sb_publishable_gEwRETB_aOdqEo4BhfFESg_ZscvGZ60';const SESSION_KEY='banking.supabase.session';let authSession=null;let localDemoOpen=false;let pendingProfileSession=null;const APP_URL='https://davidalfonso0111-a11y.github.io/Banking-dashboard/';
+document.querySelectorAll('[data-provider]').forEach(button=>{button.addEventListener('click',()=>{const url=new URL(SUPABASE_URL+'/auth/v1/authorize');url.searchParams.set('provider',button.dataset.provider);url.searchParams.set('redirect_to',APP_URL);authMessage('Je wordt doorgestuurd. Als deze provider nog niet is ingesteld, gebruik dan e-mailregistratie.');location.assign(url.href);});});
+const profileScreen=document.createElement('section');profileScreen.className='auth-screen';profileScreen.hidden=true;profileScreen.setAttribute('aria-labelledby','profileTitle');profileScreen.innerHTML=`<div class="auth-card"><h1 id="profileTitle">Maak je profiel compleet</h1><p class="auth-intro">Vul je gegevens aan voordat je het dashboard opent.</p><form id="profileForm" class="auth-form"><label for="profileFirst">Voornaam</label><input id="profileFirst" name="first_name" autocomplete="given-name" maxlength="100" required><label for="profileLast">Achternaam</label><input id="profileLast" name="last_name" autocomplete="family-name" maxlength="100" required><label for="profileCountry">Land van verblijf</label><select id="profileCountry" name="country" autocomplete="country" required><option value="">Kies je land</option><option value="BE">België</option><option value="NL">Nederland</option><option value="DE">Duitsland</option><option value="FR">Frankrijk</option><option value="LU">Luxemburg</option><option value="OTHER">Ander land</option></select><button type="submit">Profiel opslaan</button><button type="button" id="profileCancel" class="secondary">Terug naar inloggen</button></form><p id="profileStatus" role="status" class="auth-notice">Deze gegevens worden opgeslagen bij je Supabase-account.</p></div>`;document.body.append(profileScreen);
+function completeProfile(session,user){pendingProfileSession=session;sessionStorage.setItem(SESSION_KEY,JSON.stringify({refresh_token:session.refresh_token}));authScreen.hidden=true;appHeader.hidden=true;appMain.hidden=true;document.getElementById('confirmationScreen').hidden=true;profileScreen.hidden=false;const metadata=user.user_metadata||{};document.getElementById('profileFirst').value=metadata.first_name||metadata.given_name||'';document.getElementById('profileLast').value=metadata.last_name||metadata.family_name||'';document.getElementById('profileCountry').value=metadata.country||'';document.getElementById('profileFirst').focus();}
+document.getElementById('profileCancel').addEventListener('click',()=>{lockDashboard();showAuthMode(false);});document.getElementById('profileForm').addEventListener('submit',async e=>{e.preventDefault();const button=e.target.querySelector('[type="submit"]');button.disabled=true;const status=document.getElementById('profileStatus');status.textContent='Opslaan…';try{const f=new FormData(e.target);const first=String(f.get('first_name')).trim(),last=String(f.get('last_name')).trim();if(!first||!last)throw new Error('Vul je voornaam en achternaam in.');if(!pendingProfileSession)throw new Error('Meld je opnieuw aan.');await authRequest('user',{data:{first_name:first,last_name:last,country:f.get('country')}},pendingProfileSession.access_token,'PUT');await enterDashboard(pendingProfileSession);}catch(err){status.textContent=err.message;}finally{button.disabled=false;}});
+const authScreen=document.getElementById('authScreen');const appHeader=document.getElementById('appHeader');const appMain=document.getElementById('appMain');const authMessage=text=>{document.getElementById('authStatus').textContent=text;};
+async function authRequest(path,body,token,method='POST'){const controller=new AbortController();const timeout=setTimeout(()=>controller.abort(),20000);try{const response=await fetch(SUPABASE_URL+'/auth/v1/'+path,{method,signal:controller.signal,headers:{apikey:SUPABASE_KEY,'Content-Type':'application/json',...(token?{Authorization:'Bearer '+token}:{})},...(body!==undefined?{body:JSON.stringify(body)}:{})});const result=await response.json().catch(()=>({}));if(!response.ok)throw new Error(result.msg||result.error_description||result.message||'Aanmelden mislukt ('+response.status+').');return result;}finally{clearTimeout(timeout);}}
+function showConfirmation(success,message){authScreen.hidden=true;appHeader.hidden=true;appMain.hidden=true;document.getElementById('confirmationScreen').hidden=false;document.getElementById('confirmationIcon').textContent=success?'✓':'!';document.getElementById('confirmationTitle').textContent=success?'Registratie voltooid':'Bevestigen niet gelukt';document.getElementById('confirmationMessage').textContent=message;document.getElementById('confirmationContinue').hidden=!success;document.getElementById('confirmationLogin').hidden=success;document.getElementById('confirmationTitle').setAttribute('tabindex','-1');document.getElementById('confirmationTitle').focus();}
+document.getElementById('confirmationContinue').addEventListener('click',async()=>{const button=document.getElementById('confirmationContinue');button.disabled=true;try{if(!authSession?.refresh_token)throw new Error('Log opnieuw in om verder te gaan.');const session=await authRequest('token?grant_type=refresh_token',{refresh_token:authSession.refresh_token});await enterDashboard(session);}catch(err){lockDashboard();showAuthMode(false);authMessage(err.message);}finally{button.disabled=false;}});
+document.getElementById('confirmationLogin').addEventListener('click',()=>{lockDashboard();showAuthMode(false);authMessage('Log in als je e-mailadres al bevestigd is. Is de link verlopen? Vraag een nieuwe bevestigingsmail aan.');document.getElementById('loginEmail').focus();});
+const resendButton=document.createElement('button');resendButton.type='button';resendButton.className='secondary';resendButton.textContent='Nieuwe bevestigingsmail aanvragen';document.getElementById('loginForm').append(resendButton);resendButton.addEventListener('click',async()=>{const input=document.getElementById('loginEmail');if(!input.reportValidity())return;resendButton.disabled=true;authMessage('Bevestigingsmail aanvragen…');try{await authRequest('resend',{type:'signup',email:input.value.trim(),email_redirect_to:'https://davidalfonso0111-a11y.github.io/Banking-dashboard/'});authMessage('Als dit account nog bevestigd moet worden, ontvang je een nieuwe mail. Controleer ook je spammap.');}catch(err){authMessage(err.message);}finally{resendButton.disabled=false;}});
+function lockDashboard(){document.getElementById('confirmationScreen').hidden=true;profileScreen.hidden=true;pendingProfileSession=null;localDemoOpen=false;authSession=null;storageKey=null;sessionStorage.removeItem(SESSION_KEY);data={accounts:[],tx:[]};closeMenu();appHeader.hidden=true;appMain.hidden=true;authScreen.hidden=false;render();}
+async function enterDashboard(session){if(!session.access_token||!session.refresh_token)throw new Error('Geen geldige sessie ontvangen.');const user=await authRequest('user',undefined,session.access_token,'GET');if(!user.email_confirmed_at)throw new Error('Bevestig eerst je e-mailadres.');const profile=user.user_metadata||{};if(!profile.first_name||!profile.last_name||!profile.country){completeProfile(session,user);return false;}profileScreen.hidden=true;pendingProfileSession=null;authSession={...session,user};storageKey='dashboardData:user:'+user.id;try{data=JSON.parse(localStorage.getItem(storageKey)||'{"accounts":[],"tx":[]}');}catch{data={accounts:[],tx:[]};}if(!validBackup(data))data={accounts:[],tx:[]};sessionStorage.setItem(SESSION_KEY,JSON.stringify({refresh_token:session.refresh_token}));document.getElementById('sessionLabel').textContent='Ingelogd: '+user.email;document.getElementById('confirmationScreen').hidden=true;localDemoOpen=true;authScreen.hidden=true;appHeader.hidden=false;appMain.hidden=false;render();showPage('overzicht');if(data.accounts.some(isCrypto))syncAll();return true;}
+async function withAuthForm(form,action){const button=form.querySelector('button[type="submit"]');button.disabled=true;authMessage('Even wachten…');try{await action();}catch(err){authMessage(err.name==='AbortError'?'Verbinding duurt te lang. Probeer opnieuw.':err.message);}finally{button.disabled=false;}}
+document.getElementById('registrationForm').addEventListener('submit',e=>{e.preventDefault();withAuthForm(e.target,async()=>{const f=new FormData(e.target);if(f.get('password')!==f.get('password_confirm'))throw new Error('De wachtwoorden komen niet overeen.');const first=String(f.get('first_name')).trim(),last=String(f.get('last_name')).trim();if(!first||!last)throw new Error('Vul je voornaam en achternaam in.');const redirect='https://davidalfonso0111-a11y.github.io/Banking-dashboard/';const result=await authRequest('signup?redirect_to='+encodeURIComponent(redirect),{email:String(f.get('email')).trim(),password:f.get('password'),data:{first_name:first,last_name:last,country:f.get('country')}});e.target.reset();if(result.access_token)await enterDashboard(result);else{showAuthMode(false);authMessage('Als registratie mogelijk is, ontvang je een bevestigingsmail. Open de link en log daarna in. Controleer ook je spammap.');}});});
+document.getElementById('loginForm').addEventListener('submit',e=>{e.preventDefault();withAuthForm(e.target,async()=>{const f=new FormData(e.target);const result=await authRequest('token?grant_type=password',{email:String(f.get('email')).trim(),password:f.get('password')});await enterDashboard(result);e.target.reset();});});
+function showAuthMode(register){document.getElementById('registrationForm').hidden=!register;document.getElementById('loginForm').hidden=register;document.getElementById('authTitle').textContent=register?'Maak je account aan':'Welkom terug';document.getElementById('showRegistration').setAttribute('aria-pressed',String(register));document.getElementById('showLogin').setAttribute('aria-pressed',String(!register));}
+document.getElementById('showRegistration').addEventListener('click',()=>showAuthMode(true));document.getElementById('showLogin').addEventListener('click',()=>showAuthMode(false));document.getElementById('closeLocalDemo').addEventListener('click',async()=>{const token=authSession?.access_token;lockDashboard();showAuthMode(false);authMessage('Lokaal uitgelogd.');document.getElementById('loginEmail').focus();if(token){try{await authRequest('logout',undefined,token);}catch{authMessage('Lokaal uitgelogd; server kon niet worden bereikt. Andere sessies zijn mogelijk nog actief.');}}});
+async function restoreSession(){const fragment=new URLSearchParams(location.hash.slice(1));const query=new URLSearchParams(location.search);const isCallback=fragment.has('access_token')||fragment.has('error_description')||query.has('error_description');try{if(isCallback){const clean=new URL(location.href);clean.hash='';['error','error_code','error_description'].forEach(key=>clean.searchParams.delete(key));history.replaceState(null,'',clean.pathname+clean.search);const error=fragment.get('error_description')||query.get('error_description');if(error)throw new Error(error);showConfirmation(false,'Je bevestiging wordt veilig gecontroleerd…');document.getElementById('confirmationLogin').hidden=true;const entered=await enterDashboard({access_token:fragment.get('access_token'),refresh_token:fragment.get('refresh_token')});if(!entered)return;showConfirmation(true,'Je account is geverifieerd en je profiel is compleet. Welkom, '+authSession.user.user_metadata.first_name+'! Je kunt nu je dashboard openen.');return;}const stored=JSON.parse(sessionStorage.getItem(SESSION_KEY)||'null');if(stored?.refresh_token){authMessage('Sessie controleren…');await enterDashboard(await authRequest('token?grant_type=refresh_token',{refresh_token:stored.refresh_token}));}}catch(err){lockDashboard();showAuthMode(false);if(isCallback)showConfirmation(false,'Deze bevestigingslink kan verlopen of al gebruikt zijn, of de verbinding is mislukt. Probeer in te loggen of vraag via het inlogscherm een nieuwe bevestigingsmail aan. Details: '+err.message);else authMessage('Meld je opnieuw aan: '+err.message);}}
+restoreSession();setInterval(async()=>{if(!localDemoOpen||!authSession)return;try{const session=await authRequest('token?grant_type=refresh_token',{refresh_token:authSession.refresh_token});if(!localDemoOpen)return;authSession=session;sessionStorage.setItem(SESSION_KEY,JSON.stringify({refresh_token:session.refresh_token}));syncAll();}catch{lockDashboard();showAuthMode(false);authMessage('Sessie niet meer bevestigd. Log opnieuw in.');}},SYNC_MS);
 </script>
 </body>
 </html>
